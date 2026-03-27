@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,7 +14,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useToast } from '@/components/ui/use-toast'
 
-export default function AddProductPage() {
+function AddProductContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const editId = searchParams.get('edit')
@@ -544,5 +544,13 @@ export default function AddProductPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AddProductPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AddProductContent />
+    </Suspense>
   )
 }
