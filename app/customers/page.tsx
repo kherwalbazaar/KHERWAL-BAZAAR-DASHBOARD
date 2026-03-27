@@ -191,6 +191,7 @@ export default function CustomersPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
       </main>
       </div>
     </div>

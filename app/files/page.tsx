@@ -192,7 +192,12 @@ export default function FilesPage() {
                       <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive">
                         <Trash2 className="h-4 w-4" />
                       </Button>
-          </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
       </div>

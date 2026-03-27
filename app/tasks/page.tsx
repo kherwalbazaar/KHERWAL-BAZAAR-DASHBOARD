@@ -100,7 +100,94 @@ export default function TasksPage() {
                     <p className="text-sm text-muted-foreground mt-1">
                       You have {criticalTasks.length} critical task{criticalTasks.length !== 1 ? 's' : ''} that need immediate attention.
                     </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Status Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">To Do</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{statusCounts.todo}</div>
+                <p className="text-xs text-muted-foreground">tasks pending</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{statusCounts['in-progress']}</div>
+                <p className="text-xs text-muted-foreground">tasks active</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Completed</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{statusCounts.completed}</div>
+                <p className="text-xs text-muted-foreground">tasks done</p>
+              </CardContent>
+            </Card>
           </div>
+
+          {/* Tasks List */}
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <CardTitle>Tasks</CardTitle>
+                  <CardDescription>All active and completed tasks</CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <div className="relative flex-1 md:flex-none md:w-64">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search tasks..."
+                      className="pl-10"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add Task
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {filteredTasks.map((task) => (
+                  <div key={task.id} className="flex items-center gap-4 p-4 border border-border rounded-lg">
+                    <Checkbox checked={task.completed} />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium truncate">{task.title}</h4>
+                      <p className="text-sm text-muted-foreground truncate">{task.description}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant={priorityColors[task.priority] as any}>
+                          {priorityLabel[task.priority]}
+                        </Badge>
+                        <Badge variant={statusColors[task.status] as any}>
+                          {statusLabel[task.status]}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">{task.assignee}</span>
+                        <span className="text-xs text-muted-foreground">{task.dueDate}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
       </div>
