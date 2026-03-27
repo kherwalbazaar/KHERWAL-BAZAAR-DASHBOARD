@@ -14,7 +14,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useToast } from '@/components/ui/use-toast'
 
-function AddProductContent() {
+function AddProductForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const editId = searchParams.get('edit')
@@ -549,8 +549,8 @@ function AddProductContent() {
 
 export default function AddProductPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <AddProductContent />
+    <Suspense fallback={<div>Loading form...</div>}>
+      <AddProductForm />
     </Suspense>
   )
 }
