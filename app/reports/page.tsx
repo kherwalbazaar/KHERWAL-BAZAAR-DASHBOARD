@@ -27,13 +27,12 @@ interface Report {
   }[]
 }
 
-const [salesData, setSalesData] = useState<any[]>([])
-const [stockData, setStockData] = useState<any[]>([])
-const [loading, setLoading] = useState(true)
-
 const reports: Report[] = []
 
 export default function ReportsPage() {
+  const [salesData, setSalesData] = useState<any[]>([])
+  const [stockData, setStockData] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const typeIcons = {
