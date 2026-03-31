@@ -184,4 +184,31 @@ export const getSales = async () => {
   }
 };
 
+export const addSale = async (saleData: any) => {
+  try {
+    const docRef = await addDoc(collection(db, 'sales'), {
+      ...saleData,
+      createdAt: new Date().toISOString()
+    });
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('Error adding sale:', error);
+    return { success: false, error };
+  }
+};
+
+export const getCustomers = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'customers'));
+    const customers: any[] = [];
+    querySnapshot.forEach((doc) => {
+      customers.push({ id: doc.id, ...doc.data() });
+    });
+    return { success: true, customers };
+  } catch (error) {
+    console.error('Error getting customers:', error);
+    return { success: false, error };
+  }
+};
+
 export { app, analytics, db };
