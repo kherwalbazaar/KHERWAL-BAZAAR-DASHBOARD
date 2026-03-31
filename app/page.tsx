@@ -5,7 +5,7 @@ import { SidebarNav } from '@/components/sidebar-nav'
 import { Header } from '@/components/header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dashboard } from '@/components/dashboard'
-import { TrendingUp, ShoppingCart, Users, DollarSign, Package } from 'lucide-react'
+import { TrendingUp, ShoppingCart, Users, DollarSign, Package, Loader2 } from 'lucide-react'
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState('garments')
@@ -19,6 +19,7 @@ export default function Home() {
     totalProductCost: 0
   })
   const [isClient, setIsClient] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Load real data from Firebase on component mount
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function Home() {
   }, [])
 
   const loadDashboardData = async () => {
+    setIsLoading(true)
     try {
       const { getProducts, getOrders } = await import('@/lib/firebase')
       
@@ -80,6 +82,8 @@ export default function Home() {
         totalStock: 0,
         totalProductCost: 0
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -100,7 +104,13 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {isClient ? `₹${metrics.totalSale.toLocaleString()}` : '₹0'}
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : (
+                    isClient ? `₹${metrics.totalSale.toLocaleString()}` : '₹0'
+                  )}
                 </div>
                 <p className="text-xs text-blue-100">+12.5% from last month</p>
               </CardContent>
@@ -113,7 +123,13 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {isClient ? metrics.totalOrders.toLocaleString() : '0'}
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : (
+                    isClient ? metrics.totalOrders.toLocaleString() : '0'
+                  )}
                 </div>
                 <p className="text-xs text-blue-100">+8.2% from last month</p>
               </CardContent>
@@ -126,7 +142,13 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {isClient ? metrics.activeCustomers.toLocaleString() : '0'}
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : (
+                    isClient ? metrics.activeCustomers.toLocaleString() : '0'
+                  )}
                 </div>
                 <p className="text-xs text-blue-100">+5.1% from last month</p>
               </CardContent>
@@ -139,7 +161,13 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {isClient ? `${metrics.growthRate.toFixed(1)}%` : '0%'}
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : (
+                    isClient ? `${metrics.growthRate.toFixed(1)}%` : '0%'
+                  )}
                 </div>
                 <p className="text-xs text-blue-100">Year-over-year</p>
               </CardContent>
@@ -155,7 +183,13 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {isClient ? metrics.totalProducts.toLocaleString() : '0'}
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : (
+                    isClient ? metrics.totalProducts.toLocaleString() : '0'
+                  )}
                 </div>
                 <p className="text-xs text-purple-100">Products in inventory</p>
               </CardContent>
@@ -168,7 +202,13 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {isClient ? metrics.totalStock.toLocaleString() : '0'}
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : (
+                    isClient ? metrics.totalStock.toLocaleString() : '0'
+                  )}
                 </div>
                 <p className="text-xs text-green-100">Units available</p>
               </CardContent>
@@ -181,7 +221,13 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {isClient ? `₹${metrics.totalProductCost.toLocaleString()}` : '₹0'}
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : (
+                    isClient ? `₹${metrics.totalProductCost.toLocaleString()}` : '₹0'
+                  )}
                 </div>
                 <p className="text-xs text-orange-100">Total product cost price</p>
               </CardContent>
