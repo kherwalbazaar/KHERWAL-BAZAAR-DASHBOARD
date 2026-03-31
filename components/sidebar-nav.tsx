@@ -124,6 +124,12 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
   // Define navigation items for different sections
   const dashboardNavItems = [
     {
+      label: 'POS',
+      href: '/pos',
+      icon: CreditCard,
+      count: 0,
+    },
+    {
       label: 'Kherwal Bazaar',
       href: '/garments',
       icon: Shirt,
@@ -157,6 +163,12 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
       count: null,
       children: [
         {
+          label: 'POS (New Sale)',
+          href: '/garments/pos',
+          icon: Plus,
+          count: null,
+        },
+        {
           label: 'Orders',
           href: '/garments/orders',
           icon: List,
@@ -167,12 +179,6 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
           href: '/garments/billing',
           icon: FileText,
           count: 45,
-        },
-        {
-          label: 'POS (New Sale)',
-          href: '/garments/pos',
-          icon: Plus,
-          count: null,
         },
         {
           label: 'Returns',
@@ -585,7 +591,7 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
                     'flex items-center justify-between px-4 py-2 rounded-xl transition-all duration-200 text-sm font-medium border-b border-gray-300',
                     active
                       ? 'bg-white text-sidebar shadow-md scale-105'
-                      : 'text-sidebar-foreground hover:bg-white/10'
+                      : 'text-sidebar-foreground hover:bg-white hover:text-blue-600'
                   )}
                   onClick={(e) => {
                     if (hasChildren) {
@@ -634,7 +640,7 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
                             'flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 border-b border-gray-200',
                             childActive
                               ? 'bg-blue-100 text-blue-800'
-                              : 'text-sidebar-foreground hover:bg-blue-50'
+                              : 'text-sidebar-foreground hover:bg-white hover:text-blue-600'
                           )}
                         >
                           <ChildIcon className="h-4 w-4 flex-shrink-0" />

@@ -15,6 +15,7 @@ interface Category {
   code: string
   productCount: number
   totalStock: number
+  totalAmount: number
   status: string
   trend: 'up' | 'down'
   trendValue: string
@@ -52,13 +53,14 @@ export default function CategoriesPage() {
         getCategories()
       ])
       
-      const categoryMap = new Map<string, { count: number; stock: number }>()
+      const categoryMap = new Map<string, { count: number; stock: number; amount: number }>()
       
       if (categoriesResult.success && categoriesResult.categories) {
         categoriesResult.categories.forEach((category: any) => {
           categoryMap.set(category.name, {
             count: category.productCount || 0,
-            stock: category.totalStock || 0
+            stock: category.totalStock || 0,
+            amount: 0
           })
         })
       }
@@ -70,12 +72,14 @@ export default function CategoriesPage() {
             const existing = categoryMap.get(categoryName)!
             categoryMap.set(categoryName, {
               count: existing.count + 1,
-              stock: existing.stock + (Number(product.stock) || 0)
+              stock: existing.stock + (Number(product.stock) || 0),
+              amount: existing.amount + (Number(product.costPrice || 0) * Number(product.stock || 0))
             })
           } else {
             categoryMap.set(categoryName, {
               count: 1,
-              stock: Number(product.stock) || 0
+              stock: Number(product.stock) || 0,
+              amount: Number(product.costPrice || 0) * Number(product.stock || 0)
             })
           }
         })
@@ -87,6 +91,7 @@ export default function CategoriesPage() {
         code: name.toUpperCase().substring(0, 6).replace(/\s/g, ''),
         productCount: data.count,
         totalStock: data.stock,
+        totalAmount: data.amount,
         status: 'Active',
         trend: 'up',
         trendValue: '+0%'
@@ -147,6 +152,7 @@ export default function CategoriesPage() {
         code: generatedCode,
         productCount: 0,
         totalStock: 0,
+        totalAmount: 0,
         status: 'Active',
         trend: 'up',
         trendValue: '+0%',
@@ -330,7 +336,7 @@ export default function CategoriesPage() {
                     {category.status}
                   </Badge>
                 </div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-3 gap-3 text-sm">
                   <div>
                     <p className="text-slate-400 text-xs">Products</p>
                     <p className="font-semibold">{category.productCount}</p>
@@ -338,6 +344,10 @@ export default function CategoriesPage() {
                   <div>
                     <p className="text-slate-400 text-xs">Stock</p>
                     <p className="font-semibold">{category.totalStock}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-xs">Total Amount</p>
+                    <p className="font-semibold">₹{category.totalAmount.toLocaleString()}</p>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-all duration-200">
