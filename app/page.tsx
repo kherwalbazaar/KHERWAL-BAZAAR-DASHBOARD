@@ -94,9 +94,9 @@ export default function Home() {
         <SidebarNav activeSection={activeSection} />
         {/* Main Content */}
         <main className="flex-1 ml-64 bg-background">
-        <div className="p-8 max-w-7xl mx-auto mt-20">
+        <div className="p-8 w-full mt-20">
           {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <Card className="bg-blue-500 text-white">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white">Total Sale</CardTitle>
@@ -116,10 +116,10 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="bg-blue-500 text-white">
+            <Card className="bg-green-500 text-white">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white">Total Orders</CardTitle>
-                <ShoppingCart className="h-4 w-4 text-blue-100" />
+                <ShoppingCart className="h-4 w-4 text-green-100" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
@@ -131,33 +131,14 @@ export default function Home() {
                     isClient ? metrics.totalOrders.toLocaleString() : '0'
                   )}
                 </div>
-                <p className="text-xs text-blue-100">+8.2% from last month</p>
+                <p className="text-xs text-green-100">+8.2% from last month</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-blue-500 text-white">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white">Active Customers</CardTitle>
-                <Users className="h-4 w-4 text-blue-100" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">
-                  {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <Loader2 className="h-6 w-6 animate-spin" />
-                    </div>
-                  ) : (
-                    isClient ? metrics.activeCustomers.toLocaleString() : '0'
-                  )}
-                </div>
-                <p className="text-xs text-blue-100">+5.1% from last month</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-blue-500 text-white">
+            <Card className="bg-purple-500 text-white">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white">Growth Rate</CardTitle>
-                <TrendingUp className="h-4 w-4 text-blue-100" />
+                <TrendingUp className="h-4 w-4 text-purple-100" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
@@ -169,7 +150,7 @@ export default function Home() {
                     isClient ? `${metrics.growthRate.toFixed(1)}%` : '0%'
                   )}
                 </div>
-                <p className="text-xs text-blue-100">Year-over-year</p>
+                <p className="text-xs text-purple-100">Year-over-year</p>
               </CardContent>
             </Card>
           </div>

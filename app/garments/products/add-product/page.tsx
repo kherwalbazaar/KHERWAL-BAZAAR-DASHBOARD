@@ -332,16 +332,16 @@ function AddProductForm() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto -mt-6 -mx-6 pt-6">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => router.back()}>
+      <div className="flex items-center gap-4 mb-6 bg-blue-500 p-4">
+        <Button variant="outline" size="sm" className="gap-2 bg-white text-blue-600 hover:bg-red-500 hover:text-white" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">{isEditing ? 'Edit Product' : 'Add Product'}</h1>
-          <p className="text-muted-foreground">{isEditing ? 'Update product information' : 'Add new product to your inventory'}</p>
+          <h1 className="text-2xl font-bold text-white">{isEditing ? 'Edit Product' : 'Add Product'}</h1>
+          <p className="text-blue-100">{isEditing ? 'Update product information' : 'Add new product to your inventory'}</p>
         </div>
       </div>
 

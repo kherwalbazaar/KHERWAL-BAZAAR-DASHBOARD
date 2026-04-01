@@ -151,12 +151,6 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
 
   const garmentsNavItems = [
     {
-      label: 'Dashboard',
-      href: '/garments',
-      icon: LayoutDashboard,
-      count: null,
-    },
-    {
       label: 'Sales & Orders',
       href: '/garments/sales-orders',
       icon: ShoppingCart,
@@ -549,7 +543,7 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
   ]
 
   // Select navigation items based on active section
-  let navItems = dashboardNavItems
+  let navItems: NavItem[] = dashboardNavItems
   switch (activeSection) {
     case 'garments':
       navItems = garmentsNavItems
@@ -590,8 +584,8 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
                   className={cn(
                     'flex items-center justify-between px-4 py-2 rounded-xl transition-all duration-200 text-sm font-medium border-b border-gray-300',
                     active
-                      ? 'bg-white text-sidebar shadow-md scale-105'
-                      : 'text-sidebar-foreground hover:bg-white hover:text-blue-600'
+                      ? 'bg-white text-blue-600 shadow-md scale-105'
+                      : 'text-white hover:bg-white hover:text-blue-600'
                   )}
                   onClick={(e) => {
                     if (hasChildren) {
@@ -601,7 +595,10 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <Icon className="h-5 w-5 flex-shrink-0" />
+                    <Icon className={cn(
+                      'h-5 w-5 flex-shrink-0',
+                      active ? 'text-blue-600' : 'text-white'
+                    )} />
                     <span>{item.label}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -620,6 +617,7 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
                     <ChevronDown 
                       className={cn(
                         'h-4 w-4 transition-transform duration-200',
+                        active ? 'text-blue-600' : 'text-white',
                         isExpanded ? 'rotate-180' : ''
                       )}
                     />
@@ -640,10 +638,13 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
                             'flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 border-b border-gray-200',
                             childActive
                               ? 'bg-blue-100 text-blue-800'
-                              : 'text-sidebar-foreground hover:bg-white hover:text-blue-600'
+                              : 'text-white hover:bg-white hover:text-blue-600'
                           )}
                         >
-                          <ChildIcon className="h-4 w-4 flex-shrink-0" />
+                          <ChildIcon className={cn(
+                            'h-4 w-4 flex-shrink-0',
+                            childActive ? 'text-blue-800' : 'text-white'
+                          )} />
                           <span>{child.label}</span>
                         </Link>
                       )

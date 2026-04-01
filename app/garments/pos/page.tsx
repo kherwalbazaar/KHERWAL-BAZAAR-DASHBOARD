@@ -8,8 +8,15 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Search, Plus, Minus, Trash2, CreditCard, DollarSign, Package, User, Calendar, Receipt, Printer, ShoppingCart } from 'lucide-react'
+import { Search, Plus, Minus, Trash2, CreditCard, DollarSign, Package, User, Calendar, Receipt, Printer, ShoppingCart, ArrowLeft } from 'lucide-react'
 
 interface CartItem {
   id: string
@@ -37,6 +44,7 @@ export default function POSPage() {
   const [paymentMethod, setPaymentMethod] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [showWarningDialog, setShowWarningDialog] = useState(false)
 
   // Load data from Firebase
   useEffect(() => {
@@ -77,6 +85,23 @@ export default function POSPage() {
   // Get unique categories from products
   const categories = ['all', ...Array.from(new Set(products.map(p => p.category || 'Uncategorized').filter(Boolean)))]
 
+  // Define background colors for cards
+  const cardColors = [
+    'bg-green-500',    // Maximum bright green
+    'bg-pink-500',     // Maximum bright pink  
+    'bg-blue-500',     // Maximum bright blue
+    'bg-cyan-500',     // Maximum bright cyan
+    'bg-purple-500',   // Maximum bright purple
+    'bg-yellow-500',   // Maximum bright yellow
+    'bg-orange-500'    // Maximum bright orange
+  ]
+
+  // Get random color for each product based on its ID
+  const getCardColor = (productId: string) => {
+    const index = productId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % cardColors.length
+    return cardColors[index]
+  }
+
   // Filter products based on search and category
   useEffect(() => {
     let filtered = products
@@ -93,7 +118,8 @@ export default function POSPage() {
       filtered = filtered.filter(product =>
         (product.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (product.sku || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (product.category || '').toLowerCase().includes(searchTerm.toLowerCase())
+        (product.category || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (`Product ${product.id?.slice(-6) || ''}`).toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -112,7 +138,7 @@ export default function POSPage() {
     } else {
       const newItem: CartItem = {
         id: product.id,
-        name: product.name,
+        name: product.name || product.productName || product.title || product.displayName || product.sku || `Product ${product.id?.slice(-6) || 'Unknown'}`,
         price: Number(product.sellingPrice || product.costPrice || 0),
         quantity: 1,
         stock: Number(product.stock || 0),
@@ -120,7 +146,7 @@ export default function POSPage() {
         sku: product.sku || 'N/A'
       }
       setCart([...cart, newItem])
-      toast.success(`${product.name} added to cart`)
+      toast.success(`${product.name || product.productName || product.title || product.displayName || product.sku || 'Product'} added to cart`)
     }
   }
 
@@ -155,6 +181,27 @@ export default function POSPage() {
 
   const calculateTotal = () => {
     return calculateSubtotal() + calculateTax()
+  }
+
+  // Handle Back button click with cart warning
+  const handleBackClick = () => {
+    if (cart.length > 0) {
+      setShowWarningDialog(true)
+    } else {
+      window.history.back()
+    }
+  }
+
+  // Handle discard cart and go back
+  const handleDiscardAndGoBack = () => {
+    setCart([])
+    setShowWarningDialog(false)
+    window.history.back()
+  }
+
+  // Handle cancel warning dialog
+  const handleCancelWarning = () => {
+    setShowWarningDialog(false)
   }
 
   const processSale = async () => {
@@ -252,20 +299,22 @@ export default function POSPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b px-6 py-4">
+      <div className="bg-blue-500 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <CreditCard className="h-6 w-6 text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">POS - Point of Sale</h1>
+            <Button variant="outline" size="sm" className="gap-2 bg-white text-blue-600 hover:bg-red-500 hover:text-white" onClick={handleBackClick}>
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <CreditCard className="h-6 w-6 text-white" />
+            <h1 className="text-2xl font-bold text-white">POS - Point of Sale</h1>
           </div>
-          <div className="text-sm text-gray-500">
-            {new Date().toLocaleDateString('en-IN', { 
+          <div className="text-sm text-blue-100">{new Date().toLocaleDateString('en-IN', { 
               weekday: 'long', 
               year: 'numeric', 
               month: 'long', 
               day: 'numeric' 
-            })}
-          </div>
+            })}</div>
         </div>
       </div>
 
@@ -285,19 +334,19 @@ export default function POSPage() {
                 }`}
               >
                 {category === 'all' ? 'All Products' : category}
-                {category !== 'all' && (
-                  <span className="ml-2 text-xs text-gray-500">
-                    ({products.filter(p => (p.category || 'Uncategorized') === category).length})
-                  </span>
-                )}
+                <span className="ml-2 text-xs text-gray-500">
+                  ({category === 'all' 
+                    ? products.length 
+                    : products.filter(p => (p.category || 'Uncategorized') === category).length})
+                </span>
               </button>
             ))}
           </div>
         </div>
 
         {/* Products Section */}
-        <div className="flex-1 max-w-2xl p-6 overflow-auto">
-          <Card className="card-flat shadow-sm mb-6">
+        <div className="flex-1 max-w-2xl -mt-6 -ml-6 -mr-6 p-6 overflow-auto">
+          <Card className="card-flat shadow-sm">
             <CardHeader className="px-6 pb-4">
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
@@ -315,7 +364,7 @@ export default function POSPage() {
                 />
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 max-h-[500px] overflow-y-auto scrollbar-hide">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1 max-h-[500px] overflow-y-auto scrollbar-hide">
                 {filteredProducts.length === 0 ? (
                   <div className="col-span-full text-center py-8 text-gray-500">
                     <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -325,52 +374,30 @@ export default function POSPage() {
                   filteredProducts.map((product) => (
                     <Card 
                       key={product.id} 
-                      className="hover:shadow-lg transition-all cursor-pointer border border-gray-200 hover:border-gray-300"
+                      className={`hover:shadow-lg transition-all cursor-pointer border border-gray-200 hover:border-gray-300 ${getCardColor(product.id)}`}
                       onClick={() => addToCart(product)}
                     >
-                      <CardContent className="p-1.5">
-                        <div className="space-y-0.5">
+                      <CardContent className="p-0.5 pb-0 flex flex-col h-full">
+                        <div className="text-center w-full flex-1 flex items-center justify-center">
                           {/* Product Name */}
                           <div>
-                            <h3 className="font-bold text-[10px] text-gray-900 line-clamp-1">
-                              {product.name}
+                            <h3 className="font-bold text-xs text-white line-clamp-2">
+                              {product.name || product.productName || product.title || product.displayName || product.sku || `Product ${product.id?.slice(-6) || 'Unknown'}`}
                             </h3>
+                            {/* Debug: Show available fields */}
+                            <p className="text-xs text-white/70 hidden">
+                              Fields: {Object.keys(product).join(', ')}
+                            </p>
                           </div>
-
-                          {/* SKU and Category */}
-                          <div className="flex gap-0.5">
-                            <Badge variant="outline" className="text-[9px] px-0.5 py-0 text-[8px]">
-                              {product.sku || 'N/A'}
-                            </Badge>
-                            <Badge variant="secondary" className="text-[9px] px-0.5 py-0 text-[8px]">
-                              {product.category || 'Uncategorized'}
-                            </Badge>
+                        </div>
+                        
+                        {/* Price */}
+                        <div className="text-center w-full">
+                          <div className="border-t border-white/20">
+                            <p className="font-bold text-sm text-white">
+                              ₹{Number(product.sellingPrice || product.costPrice || 0).toLocaleString()}
+                            </p>
                           </div>
-
-                          {/* Price and Stock */}
-                          <div className="grid grid-cols-2 gap-0.5 pt-0.5 border-t">
-                            <div>
-                              <p className="text-[9px] text-gray-500 mb-0">Price</p>
-                              <p className="font-bold text-[10px] text-blue-600">
-                                ₹{Number(product.sellingPrice || product.costPrice || 0).toLocaleString()}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-[9px] text-gray-500 mb-0">Stock</p>
-                              <p className={`font-bold text-[10px] ${Number(product.stock || 0) > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {product.stock || 0}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Add to Cart Button */}
-                          <Button 
-                            className="w-full h-5 text-[9px]"
-                            disabled={Number(product.stock || 0) <= 0}
-                          >
-                            <Plus className="h-2 w-2 mr-0.5" />
-                            Add
-                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -382,18 +409,42 @@ export default function POSPage() {
         </div>
 
         {/* Cart Section */}
-        <div className="w-[450px] bg-white border-l p-6 overflow-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5" />
-                Cart ({cart.length})
-              </CardTitle>
-            </CardHeader>
+        <div className="w-[450px] -mt-6 -ml-6 -mr-6 -mb-6 p-6 overflow-auto">
+          <Card className="card-flat shadow-sm">
             <CardContent className="space-y-4">
+              {/* Cart Items */}
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {cart.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">Cart is empty</p>
+                ) : (
+                  cart.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-2 border rounded">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm">{item.name}</h4>
+                        <p className="text-sm font-semibold">₹{item.price.toLocaleString()}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="w-8 text-center text-sm">{item.quantity}</span>
+                        <Button size="sm" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-6 w-6 text-red-500" onClick={() => removeFromCart(item.id)}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <Separator />
+
               {/* Customer Selection */}
               <div>
-                <Label className="text-sm font-medium">Customer</Label>
+                <Label className="text-base font-medium">Customer</Label>
                 <Select value={selectedCustomer?.id || 'walk-in'} onValueChange={(value) => {
                   if (value === 'walk-in') {
                     setSelectedCustomer(null)
@@ -414,37 +465,6 @@ export default function POSPage() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-
-              <Separator />
-
-              {/* Cart Items */}
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {cart.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">Cart is empty</p>
-                ) : (
-                  cart.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-2 border rounded">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-sm">{item.name}</h4>
-                        <p className="text-xs text-gray-500">{item.sku}</p>
-                        <p className="text-sm font-semibold">₹{item.price.toLocaleString()}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-8 text-center text-sm">{item.quantity}</span>
-                        <Button size="sm" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="ghost" className="h-6 w-6 text-red-500" onClick={() => removeFromCart(item.id)}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                )}
               </div>
 
               <Separator />
@@ -518,6 +538,32 @@ export default function POSPage() {
           </Card>
         </div>
       </div>
+
+      {/* Warning Dialog */}
+      <Dialog open={showWarningDialog} onOpenChange={setShowWarningDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Discard Cart Items?</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-600">
+              You have {cart.length} item{cart.length > 1 ? 's' : ''} in your cart. 
+              If you go back, all cart items will be discarded.
+            </p>
+            <p className="text-sm text-gray-600 mt-2">
+              Are you sure you want to continue?
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelWarning}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDiscardAndGoBack}>
+              Discard & Go Back
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
