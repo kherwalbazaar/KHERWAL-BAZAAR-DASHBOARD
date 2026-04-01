@@ -197,6 +197,19 @@ export const addSale = async (saleData: any) => {
   }
 };
 
+export const saveCheckout = async (checkoutData: any) => {
+  try {
+    const docRef = await addDoc(collection(db, 'checkouts'), {
+      ...checkoutData,
+      createdAt: new Date().toISOString()
+    });
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('Error saving checkout:', error);
+    return { success: false, error };
+  }
+};
+
 export const getCustomers = async () => {
   try {
     const querySnapshot = await getDocs(collection(db, 'customers'));

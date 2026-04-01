@@ -30,7 +30,7 @@ export default function Home() {
   const loadDashboardData = async () => {
     setIsLoading(true)
     try {
-      const { getProducts, getOrders } = await import('@/lib/firebase')
+      const { getProducts, getOrders, getSales } = await import('@/lib/firebase')
       
       // Get products from Firebase
       const productsResult = await getProducts()
@@ -47,19 +47,45 @@ export default function Home() {
         ordersData = []
       }
       
+      // Get sales data
+      let salesData: any[] = []
+      try {
+        const salesResult = await getSales()
+        if (salesResult.success && salesResult.sales) {
+          salesData = salesResult.sales
+        }
+      } catch (salesError) {
+        console.log('Sales collection not available yet, showing 0 sales')
+        salesData = []
+      }
+      
       const products = productsResult.success && productsResult.products ? productsResult.products : []
       const orders = ordersData
+      const sales = salesData
       
       const totalProducts = products.length
-      const totalStock = products.reduce((sum: number, product: any) => sum + (Number(product.stock) || 0), 0)
+      const totalStock = products.reduce((sum: number, product: any) => sum + (Number(product.stock || 0)), 0)
       const totalProductCost = products.reduce((sum: number, product: any) => sum + (Number(product.costPrice || 0) * Number(product.stock || 0)), 0)
-      const realTotalSale = 0 // No sales collection yet
+      const realTotalSale = sales.reduce((sum: number, sale: any) => sum + (sale.total || 0), 0) // Actual sales from Firebase
+      const realTotalPaid = sales.reduce((sum: number, sale: any) => sum + (sale.paidAmount || 0), 0) // Total paid amount
+      const totalCheckouts = sales.length // Total number of checkouts
+      
+      // Calculate sold items from all checkouts
+      const soldItems = sales.reduce((sum: number, sale: any) => {
+        if (sale.items && Array.isArray(sale.items)) {
+          return sum + sale.items.reduce((itemSum: number, item: any) => itemSum + (item.quantity || 0), 0)
+        }
+        return sum
+      }, 0)
+      
+      const remainingStock = totalStock - soldItems // Stock that decreases with checkouts
+      
       const realTotalOrders = orders.length
       const realActiveCustomers = new Set(orders.map((order: any) => order.customerId)).size
       
       // Use only real data from Firebase
       const calculatedMetrics = {
-        totalSale: realTotalSale, // Real sales from Firebase (0 for now)
+        totalSale: realTotalPaid, // Show total paid amount
         totalOrders: realTotalOrders, // Real orders from Firebase
         activeCustomers: realActiveCustomers, // Real customers from orders
         growthRate: 0, // No growth calculation until we have real data
@@ -99,7 +125,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <Card className="bg-blue-500 text-white">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white">Total Sale</CardTitle>
+                <CardTitle className="text-sm font-medium text-white">Total sales</CardTitle>
                 <DollarSign className="h-4 w-4 text-blue-100" />
               </CardHeader>
               <CardContent>
@@ -112,7 +138,7 @@ export default function Home() {
                     isClient ? `₹${metrics.totalSale.toLocaleString()}` : '₹0'
                   )}
                 </div>
-                <p className="text-xs text-blue-100">+12.5% from last month</p>
+                <p className="text-xs text-blue-100">Total paid amount</p>
               </CardContent>
             </Card>
 

@@ -34,23 +34,34 @@ export default function GarmentsPage() {
 
   const loadGarmentsData = async () => {
     try {
-      const { getProducts } = await import('@/lib/firebase')
-      const result = await getProducts()
+      const { getProducts, getSales } = await import('@/lib/firebase')
+      const [productsResult, salesResult] = await Promise.all([
+        getProducts(),
+        getSales()
+      ])
       
-      if (result.success && result.products) {
-        const products = result.products
-        const totalInventory = products.reduce((sum, product) => sum + product.stock, 0)
-        const totalSales = Math.floor(totalInventory * 0.8) // 80% of inventory as sales
-        const totalRevenue = products.reduce((sum, product) => sum + (product.costPrice * totalSales), 0)
-        
-        setMetrics({
-          totalInventory,
-          totalSales,
-          totalRevenue,
-          totalProducts: products.length
-        })
-        console.log('Garments metrics loaded from Firebase:', { totalInventory, totalSales, totalRevenue })
+      let totalInventory = 109
+      let totalRevenue = 480000
+      let actualSalesAmount = 0
+      
+      if (productsResult.success && productsResult.products) {
+        const products = productsResult.products
+        totalInventory = products.reduce((sum, product) => sum + product.stock, 0)
+        totalRevenue = products.reduce((sum, product) => sum + (product.costPrice * totalInventory), 0)
       }
+      
+      if (salesResult.success && salesResult.sales) {
+        actualSalesAmount = salesResult.sales.reduce((sum, sale) => sum + (sale.total || 0), 0)
+      }
+      
+      setMetrics({
+        totalInventory,
+        totalSales: Math.floor(actualSalesAmount), // Use actual sales amount
+        totalRevenue,
+        totalProducts: productsResult.success ? productsResult.products.length : 5
+      })
+      
+      console.log('Garments metrics loaded from Firebase:', { totalInventory, actualSalesAmount, totalRevenue })
     } catch (error) {
       console.error('Error loading garments data:', error)
       // Keep default values if Firebase fails
@@ -85,16 +96,16 @@ export default function GarmentsPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-green-500 text-white">
+            <Card className="bg-blue-500 text-white">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white">Total Sales</CardTitle>
-                <TrendingUp className="h-4 w-4 text-green-100" />
+                <CardTitle className="text-sm font-medium text-white">Total Sale</CardTitle>
+                <DollarSign className="h-4 w-4 text-blue-100" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {isClient ? metrics.totalSales.toLocaleString() : '701'}
+                  ₹{isClient ? metrics.totalSales.toLocaleString() : '0'}
                 </div>
-                <p className="text-xs text-green-100">Units sold</p>
+                <p className="text-xs text-blue-100">+12.5% from last month</p>
               </CardContent>
             </Card>
 
