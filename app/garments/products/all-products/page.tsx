@@ -109,44 +109,29 @@ export default function AllProductsPage() {
     return (
       <div className="p-6 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between bg-blue-500 p-4 -mx-6 -mt-6">
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" className="gap-2" onClick={() => router.back()}>
+            <Button variant="outline" size="sm" className="gap-2 bg-white text-blue-600 hover:bg-red-500 hover:text-white" onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4" />
               Back
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">Products</h1>
-              <p className="text-muted-foreground">All garments in your inventory</p>
+              <h1 className="text-2xl font-bold text-white">Products</h1>
+              <p className="text-blue-100">All garments in your inventory</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-sm px-3 py-1">
+            <Badge variant="secondary" className="text-sm px-3 py-1 bg-white text-blue-600">
               Total Qty: 0
             </Badge>
             <Link href="/garments/products/add-product">
-              <Button className="gap-2">
+              <Button className="gap-2 bg-white text-blue-600 hover:bg-green-500 hover:text-white">
                 <Plus className="h-4 w-4" />
                 Add Product
               </Button>
             </Link>
           </div>
         </div>
-
-        {/* Search and Filter Bar */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search products..."
-                value=""
-                className="pl-10"
-                readOnly
-              />
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Summary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -219,44 +204,29 @@ export default function AllProductsPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between bg-blue-500 p-4 -mx-6 -mt-6">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => router.back()}>
+          <Button variant="outline" size="sm" className="gap-2 bg-white text-blue-600 hover:bg-red-500 hover:text-white" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Products</h1>
-            <p className="text-muted-foreground">All garments in your inventory</p>
+            <h1 className="text-2xl font-bold text-white">Products</h1>
+            <p className="text-blue-100">All garments in your inventory</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-sm px-3 py-1">
+          <Badge variant="secondary" className="text-sm px-3 py-1 bg-white text-blue-600">
             Total Qty: {totalStock}
           </Badge>
           <Link href="/garments/products/add-product">
-            <Button className="gap-2">
+            <Button className="gap-2 bg-white text-blue-600 hover:bg-green-500 hover:text-white">
               <Plus className="h-4 w-4" />
               Add Product
             </Button>
           </Link>
         </div>
       </div>
-
-      {/* Search and Filter Bar */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -309,10 +279,21 @@ export default function AllProductsPage() {
       {/* Products Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Product Inventory ({filteredProducts.length} products)
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Product Inventory ({filteredProducts.length} products)
+            </CardTitle>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 w-64"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (

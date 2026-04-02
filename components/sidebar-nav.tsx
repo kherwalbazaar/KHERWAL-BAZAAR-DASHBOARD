@@ -122,30 +122,87 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
   }, [activeSection])
 
   // Define navigation items for different sections
-  const dashboardNavItems = [
+  // Main business navigation
+  const mainNavItems = [
     {
-      label: 'POS',
-      href: '/pos',
-      icon: CreditCard,
-      count: 0,
+      label: 'Sales & Orders',
+      href: '#',
+      icon: ShoppingCart,
+      count: null,
+      children: [
+        {
+          label: 'POS (New Sale)',
+          href: '/pos',
+          icon: Plus,
+          count: null,
+        },
+        {
+          label: 'Orders',
+          href: '/orders',
+          icon: List,
+          count: null,
+        },
+        {
+          label: 'Billing',
+          href: '/billing',
+          icon: FileText,
+          count: null,
+        },
+        {
+          label: 'Returns',
+          href: '/returns',
+          icon: RotateCcw,
+          count: null,
+        },
+      ],
     },
     {
-      label: 'Kherwal Bazaar',
-      href: '/garments',
+      label: 'Products',
+      href: '/garments/products/all-products',
       icon: Shirt,
       count: sectionData.totalProducts ?? 0,
     },
     {
-      label: 'Printing',
-      href: '/printing',
-      icon: Printer,
-      count: sectionData.totalOrders ?? 0,
+      label: 'Customers',
+      href: '/customers',
+      icon: Users,
+      count: null,
     },
     {
-      label: 'Online',
-      href: '/online',
-      icon: Code2,
-      count: sectionData.activeCustomers ?? 0,
+      label: 'Suppliers',
+      href: '/suppliers',
+      icon: Truck,
+      count: null,
+    },
+    {
+      label: 'Accounts',
+      href: '/accounts',
+      icon: DollarSign,
+      count: null,
+    },
+    {
+      label: 'Reports',
+      href: '/reports',
+      icon: BarChart3,
+      count: null,
+    },
+    {
+      label: 'Staff Management',
+      href: '/staff',
+      icon: UserCheck,
+      count: null,
+    },
+    {
+      label: 'Offers & Marketing',
+      href: '/offers',
+      icon: Gift,
+      count: null,
+    },
+    {
+      label: 'Settings',
+      href: '/settings',
+      icon: Settings,
+      count: null,
     },
   ]
 
@@ -543,20 +600,8 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
   ]
 
   // Select navigation items based on active section
-  let navItems: NavItem[] = dashboardNavItems
-  switch (activeSection) {
-    case 'garments':
-      navItems = garmentsNavItems
-      break
-    case 'printing':
-      navItems = printingNavItems
-      break
-    case 'online':
-      navItems = onlineNavItems
-      break
-    default:
-      navItems = dashboardNavItems
-  }
+  // Use mainNavItems for main navigation
+  let navItems: NavItem[] = mainNavItems
 
   const isActive = (href: string) => {
     if (href === '/') {
