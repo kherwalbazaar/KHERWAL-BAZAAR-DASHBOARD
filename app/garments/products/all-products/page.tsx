@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ArrowLeft, Plus, Search, Filter, Edit, Trash2, Package, DollarSign, Box, FileText, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Plus, Search, Filter, Edit, Trash2, Package, DollarSign, Box, FileText, TrendingUp, MoreVertical } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 // Define Product interface
 interface Product {
@@ -51,22 +52,16 @@ export default function AllProductsPage() {
           category: product.category,
           price: product.costPrice,
           stock: product.stock,
-          sales: Math.floor(Math.random() * 300) + 20, // Random sales data for demo
-          status: product.stock === 0 ? 'Out of Stock' : 
-                 product.stock <= 10 ? 'Low Stock' : 'In Stock',
-          image: '/api/placeholder/60/60',
-          createdAt: product.createdAt
+          sales: 0, // Will be calculated from sales data
+          status: product.stock > 0 ? 'In Stock' : 'Out of Stock',
+          image: product.image || '',
+          createdAt: product.createdAt || new Date().toISOString()
         }))
         
         setProducts(formattedProducts)
-        console.log('Products loaded from Firebase:', formattedProducts)
-      } else {
-        setProducts([])
-        console.log('No products found in Firebase.')
       }
     } catch (error) {
       console.error('Error loading products:', error)
-      setProducts([])
     } finally {
       setLoading(false)
     }
@@ -79,6 +74,25 @@ export default function AllProductsPage() {
     product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const handleDeleteProduct = async (productId: string, productName: string) => {
+    if (window.confirm(`Are you sure you want to delete "${productName}"?`)) {
+      try {
+        const { deleteProduct } = await import('@/lib/firebase')
+        const result = await deleteProduct(productId)
+        
+        if (result.success) {
+          setProducts(products.filter(p => p.id !== productId))
+          // You could add a toast notification here
+        } else {
+          alert('Failed to delete product')
+        }
+      } catch (error) {
+        console.error('Error deleting product:', error)
+        alert('Error deleting product')
+      }
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -356,18 +370,28 @@ export default function AllProductsPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Link href={`/garments/products/add-product?edit=${product.id}`}>
-                            <Button variant="outline" size="sm" className="gap-1">
-                              <Edit className="h-3 w-3" />
-                              Edit
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
                             </Button>
-                          </Link>
-                          <Button variant="outline" size="sm" className="gap-1 text-red-600 hover:text-red-700">
-                            <Trash2 className="h-3 w-3" />
-                            Delete
-                          </Button>
-                        </div>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/garments/products/add-product?edit=${product.id}`} className="flex items-center gap-2">
+                                <Edit className="h-4 w-4" />
+                                Edit
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteProduct(product.id, product.name)}
+                              className="flex items-center gap-2 text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}

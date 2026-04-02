@@ -5,7 +5,8 @@ import { SidebarNav } from '@/components/sidebar-nav'
 import { Header } from '@/components/header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dashboard } from '@/components/dashboard'
-import { TrendingUp, ShoppingCart, Users, DollarSign, Package, Loader2 } from 'lucide-react'
+import { TrendingUp, ShoppingCart, Users, DollarSign, Package, Loader2, RefreshCw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState('garments')
@@ -20,19 +21,98 @@ export default function Home() {
   })
   const [isClient, setIsClient] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [lastDataHash, setLastDataHash] = useState('')
+  const [dataStatus, setDataStatus] = useState<'green' | 'yellow' | 'red'>('yellow')
+  const [isSyncing, setIsSyncing] = useState(true)
+  const [changeDetectedTime, setChangeDetectedTime] = useState<number | null>(null)
 
   // Load real data from Firebase on component mount
   useEffect(() => {
     setIsClient(true)
+    setDataStatus('yellow') // Set to yellow during initial load
+    setIsSyncing(true)
     loadDashboardData()
   }, [])
 
+  // Set up change detection listener - checks for data changes every 3 seconds when not syncing
+  useEffect(() => {
+    if (!isClient || isSyncing || dataStatus === 'yellow') return // Skip if still loading or syncing
+    
+    const interval = setInterval(async () => {
+      try {
+        const { getProducts, getOrders, getSales } = await import('@/lib/firebase')
+        
+        const productsResult = await getProducts()
+        let salesData: any[] = []
+        try {
+          const salesResult = await getSales()
+          if (salesResult.success && salesResult.sales) {
+            salesData = salesResult.sales
+          }
+        } catch (error) {
+          salesData = []
+        }
+        
+        const products = productsResult.success && productsResult.products ? productsResult.products : []
+        const sales = salesData
+        
+        const totalProducts = products.length
+        const totalStock = products.reduce((sum: number, product: any) => sum + (Number(product.stock || 0)), 0)
+        const totalProductCost = products.reduce((sum: number, product: any) => sum + (Number(product.costPrice || 0) * Number(product.stock || 0)), 0)
+        
+        const realTotalPaid = sales.reduce((sum: number, sale: any) => sum + (sale.paidAmount || 0), 0)
+        const totalCheckouts = sales.length
+        
+        const checkMetrics = {
+          totalSale: realTotalPaid,
+          totalOrders: totalCheckouts,
+          activeCustomers: new Set(sales.map((sale: any) => sale.customerId)).size,
+          growthRate: 0,
+          totalProducts,
+          totalStock,
+          totalProductCost
+        }
+        
+        const newDataHash = JSON.stringify(checkMetrics)
+        
+        // If data changed and not currently showing red status
+        if (lastDataHash && newDataHash !== lastDataHash && dataStatus !== 'red') {
+          console.log('Data change detected - showing waiting for sync')
+          setDataStatus('red') // Show red "Waiting for sync"
+          setChangeDetectedTime(Date.now())
+        }
+      } catch (error) {
+        console.log('Change detection check failed:', error)
+      }
+    }, 3000)
+    
+    return () => clearInterval(interval)
+  }, [isClient, isSyncing, dataStatus, lastDataHash])
+
+  // Auto-sync after detecting changes for 3 seconds
+  useEffect(() => {
+    if (changeDetectedTime && dataStatus === 'red') {
+      const timer = setTimeout(async () => {
+        if (Date.now() - changeDetectedTime >= 3000) {
+          console.log('Auto-syncing after detecting data changes...')
+          setIsRefreshing(true)
+          setIsSyncing(true)
+          setDataStatus('yellow') // Set to yellow during sync
+          await loadDashboardData()
+          setChangeDetectedTime(null)
+        }
+      }, 3000)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [changeDetectedTime, dataStatus])
+
   const loadDashboardData = async () => {
-    setIsLoading(true)
     try {
       const { getProducts, getOrders, getSales } = await import('@/lib/firebase')
       
-      // Get products from Firebase
+      // Get products from Firebase (includes current stock values)
       const productsResult = await getProducts()
       
       // Try to get orders, but handle permission errors gracefully
@@ -64,38 +144,46 @@ export default function Home() {
       const sales = salesData
       
       const totalProducts = products.length
+      
+      // IMPORTANT: totalStock shows CURRENT stock in database (already reduced after checkouts)
+      // This is the actual real-time stock value from Firebase products
       const totalStock = products.reduce((sum: number, product: any) => sum + (Number(product.stock || 0)), 0)
+      
+      // Total product cost using CURRENT stock values (not historical)
       const totalProductCost = products.reduce((sum: number, product: any) => sum + (Number(product.costPrice || 0) * Number(product.stock || 0)), 0)
-      const realTotalSale = sales.reduce((sum: number, sale: any) => sum + (sale.total || 0), 0) // Actual sales from Firebase
+      
       const realTotalPaid = sales.reduce((sum: number, sale: any) => sum + (sale.paidAmount || 0), 0) // Total paid amount
       const totalCheckouts = sales.length // Total number of checkouts
       
-      // Calculate sold items from all checkouts
-      const soldItems = sales.reduce((sum: number, sale: any) => {
-        if (sale.items && Array.isArray(sale.items)) {
-          return sum + sale.items.reduce((itemSum: number, item: any) => itemSum + (item.quantity || 0), 0)
-        }
-        return sum
-      }, 0)
-      
-      const remainingStock = totalStock - soldItems // Stock that decreases with checkouts
-      
-      const realTotalOrders = orders.length
-      const realActiveCustomers = new Set(orders.map((order: any) => order.customerId)).size
+      const realTotalOrders = totalCheckouts // Total number of completed checkouts/carts
+      const realActiveCustomers = new Set(sales.map((sale: any) => sale.customerId)).size // Unique customers from checkouts
       
       // Use only real data from Firebase
       const calculatedMetrics = {
         totalSale: realTotalPaid, // Show total paid amount
-        totalOrders: realTotalOrders, // Real orders from Firebase
-        activeCustomers: realActiveCustomers, // Real customers from orders
+        totalOrders: realTotalOrders, // Total completed carts/checkouts
+        activeCustomers: realActiveCustomers, // Unique customers from checkouts
         growthRate: 0, // No growth calculation until we have real data
         totalProducts,
-        totalStock,
-        totalProductCost // Total product cost value
+        totalStock, // REAL stock from database (auto-reduced on checkout)
+        totalProductCost // Total product cost value using current stock
       }
+      
+      // Check if data has changed
+      const newDataHash = JSON.stringify(calculatedMetrics)
+      const hasDataChanged = lastDataHash && newDataHash !== lastDataHash
       
       setMetrics(calculatedMetrics)
       console.log('Dashboard metrics loaded from Firebase:', calculatedMetrics)
+      
+      // Data successfully synced - set to green (up to date)
+      setDataStatus('green')
+      setLastDataHash(newDataHash)
+      
+      // If data changed, set up auto-sync for next changes
+      if (hasDataChanged) {
+        console.log('Data changed detected - will auto-sync next change after 3 seconds')
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error)
       // Set all metrics to 0 if Firebase fails
@@ -108,9 +196,19 @@ export default function Home() {
         totalStock: 0,
         totalProductCost: 0
       })
+      setDataStatus('red') // Error status
     } finally {
       setIsLoading(false)
+      setIsRefreshing(false)
+      setIsSyncing(false)
     }
+  }
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    setIsSyncing(true)
+    setDataStatus('yellow') // Set to yellow during sync
+    await loadDashboardData()
   }
 
   return (
@@ -121,6 +219,39 @@ export default function Home() {
         {/* Main Content */}
         <main className="flex-1 ml-64 bg-background">
         <div className="p-8 w-full mt-20">
+          {/* Sync Status Button - Single Section */}
+          <div className="mb-6 flex justify-end">
+            <Button 
+              onClick={handleRefresh} 
+              disabled={dataStatus === 'green' || dataStatus === 'yellow'}
+              variant="outline"
+              size="sm"
+              className={`flex items-center gap-2 font-medium transition-all duration-200 ${
+                dataStatus === 'green' 
+                  ? 'bg-green-50 text-green-700 border-green-300 cursor-default' 
+                  : dataStatus === 'yellow'
+                  ? 'bg-yellow-100 text-yellow-700 border-yellow-400 cursor-not-allowed'
+                  : 'bg-red-50 text-red-600 border-red-400 hover:bg-red-100 hover:border-red-500 hover:shadow-md hover:scale-105 cursor-pointer'
+              }`}
+            >
+              <div 
+                className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  dataStatus === 'green' ? 'bg-green-500' :
+                  dataStatus === 'yellow' ? 'bg-yellow-500 animate-pulse' :
+                  'bg-red-500'
+                }`}
+              ></div>
+              {dataStatus === 'green' && '✓ Up to date'}
+              {dataStatus === 'yellow' && (
+                <>
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  Syncing data...
+                </>
+              )}
+              {dataStatus === 'red' && 'Sync Data'}
+            </Button>
+          </div>
+          
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <Card className="bg-blue-500 text-white">
@@ -217,7 +348,7 @@ export default function Home() {
                     isClient ? metrics.totalStock.toLocaleString() : '0'
                   )}
                 </div>
-                <p className="text-xs text-green-100">Units available</p>
+                <p className="text-xs text-green-100">Units available (auto-reduced on checkout)</p>
               </CardContent>
             </Card>
 
@@ -236,7 +367,7 @@ export default function Home() {
                     isClient ? `₹${metrics.totalProductCost.toLocaleString()}` : '₹0'
                   )}
                 </div>
-                <p className="text-xs text-orange-100">Total product cost price</p>
+                <p className="text-xs text-orange-100">Total inventory cost (updated with stock)</p>
               </CardContent>
             </Card>
           </div>

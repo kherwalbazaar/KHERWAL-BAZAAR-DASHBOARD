@@ -84,12 +84,13 @@ export const getProducts = async () => {
 
 export const updateProduct = async (productId: string, productData: any) => {
   try {
+    console.log(`[Firebase] Updating product ${productId} with data:`, productData);
     const productRef = doc(db, 'products', productId);
     await updateDoc(productRef, productData);
-    console.log('Product updated with ID:', productId);
+    console.log(`[Firebase] ✅ Product updated successfully with ID: ${productId}`);
     return { success: true, id: productId };
   } catch (error) {
-    console.error('Error updating product:', error);
+    console.error(`[Firebase] ❌ Error updating product ${productId}:`, error);
     return { success: false, error };
   }
 };
@@ -186,13 +187,15 @@ export const getSales = async () => {
 
 export const addSale = async (saleData: any) => {
   try {
+    console.log('[Firebase] Adding sale record:', saleData);
     const docRef = await addDoc(collection(db, 'sales'), {
       ...saleData,
       createdAt: new Date().toISOString()
     });
+    console.log('[Firebase] ✅ Sale record added successfully with ID:', docRef.id);
     return { success: true, id: docRef.id };
   } catch (error) {
-    console.error('Error adding sale:', error);
+    console.error('[Firebase] ❌ Error adding sale:', error);
     return { success: false, error };
   }
 };
