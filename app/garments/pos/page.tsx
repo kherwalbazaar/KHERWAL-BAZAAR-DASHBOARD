@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { Search, Plus, Minus, Trash2, CreditCard, DollarSign, Package, User, Calendar, Receipt, Printer, ShoppingCart, ArrowLeft, X } from 'lucide-react'
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { db } from '@/lib/firebase';
 
 interface CartItem {
   id: string
@@ -202,6 +204,44 @@ export default function POSPage() {
       const discountPercent = parseInt(selectedDiscount) || 0;
       const finalTotal = subtotal * (1 - discountPercent / 100);
       const returnAmount = Math.max(0, paidAmount - finalTotal);
+      
+      // First, update stock for each cart item
+      
+      async function handleCheckout(cartItems) {
+        try {
+          for (const item of cartItems) {
+            const productRef = doc(db, "products", item.id);
+            
+            // Get current stock
+            const productSnap = await getDoc(productRef);
+            
+            if (productSnap.exists()) {
+              const currentStock = productSnap.data().stock;
+              
+              // Calculate new stock
+              const newStock = currentStock - item.quantity;
+              
+              // Update stock
+              await updateDoc(productRef, {
+                stock: newStock
+              });
+              
+              console.log(`✅ Stock updated for ${item.name}: ${currentStock} → ${newStock}`);
+            } else {
+              console.error(`❌ Product not found: ${item.name}`);
+            }
+          }
+          
+          console.log("✅ Stock updated successfully for all items");
+          
+        } catch (error) {
+          console.error("❌ Error updating stock:", error);
+          throw error; // Re-throw to handle in checkout
+        }
+      }
+      
+      // Update stock before saving sale
+      await handleCheckout(cart);
       
       // Create checkout data
       const checkoutData = {
