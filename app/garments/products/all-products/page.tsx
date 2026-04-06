@@ -41,18 +41,42 @@ export default function AllProductsPage() {
   const loadProducts = async () => {
     try {
       setLoading(true)
-      const { getProducts } = await import('@/lib/firebase')
-      const result = await getProducts()
+      const { getProducts, getSales } = await import('@/lib/firebase')
+      const productsResult = await getProducts()
       
-      if (result.success && result.products) {
-        const formattedProducts: Product[] = result.products.map(product => ({
+      if (productsResult.success && productsResult.products) {
+        // Get sales data to calculate real sales for each product
+        let salesData: any[] = []
+        try {
+          const salesResult = await getSales()
+          if (salesResult.success && salesResult.sales) {
+            salesData = salesResult.sales
+          }
+        } catch (salesError) {
+          console.log('No sales data found:', salesError)
+        }
+        
+        // Calculate sales for each product
+        const productSales: { [key: string]: number } = {}
+        salesData.forEach((sale: any) => {
+          if (sale.items && Array.isArray(sale.items)) {
+            sale.items.forEach((item: any) => {
+              const productId = item.productId || item.id
+              if (productId) {
+                productSales[productId] = (productSales[productId] || 0) + (item.quantity || 0)
+              }
+            })
+          }
+        })
+        
+        const formattedProducts = productsResult.products.map((product: any) => ({
           id: product.id,
           name: product.productName,
           sku: product.skuCode,
           category: product.category,
           price: product.costPrice,
           stock: product.stock,
-          sales: 0, // Will be calculated from sales data
+          sales: productSales[product.id] || 0, // Real sales data
           status: product.stock > 0 ? 'In Stock' : 'Out of Stock',
           image: product.image || '',
           createdAt: product.createdAt || new Date().toISOString()
@@ -216,9 +240,6 @@ export default function AllProductsPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-sm px-3 py-1 bg-white text-blue-600">
-            Total Qty: {totalStock}
-          </Badge>
           <Link href="/garments/products/add-product">
             <Button className="gap-2 bg-white text-blue-600 hover:bg-green-500 hover:text-white">
               <Plus className="h-4 w-4" />
@@ -229,47 +250,47 @@ export default function AllProductsPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 mt-6">
+        <Card className="bg-blue-50 border-blue-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4 text-blue-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Total Products</p>
-                <p className="text-lg font-bold">{products.length}</p>
+                <p className="text-sm text-blue-600">Total Products</p>
+                <p className="text-lg font-bold text-blue-700">{products.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-green-50 border-green-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Box className="h-4 w-4 text-green-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Total Stock</p>
-                <p className="text-lg font-bold">{totalStock}</p>
+                <p className="text-sm text-green-600">Total Stock</p>
+                <p className="text-lg font-bold text-green-700">{totalStock}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-purple-50 border-purple-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-purple-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Active Products</p>
-                <p className="text-lg font-bold">{products.filter(p => p.status === 'Active').length}</p>
+                <p className="text-sm text-purple-600">Active Products</p>
+                <p className="text-lg font-bold text-purple-700">{products.filter(p => p.status === 'Active').length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-orange-50 border-orange-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-orange-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Low Stock Items</p>
-                <p className="text-lg font-bold">{products.filter(p => p.status === 'Low Stock').length}</p>
+                <p className="text-sm text-orange-600">Low Stock Items</p>
+                <p className="text-lg font-bold text-orange-700">{products.filter(p => p.status === 'Low Stock').length}</p>
               </div>
             </div>
           </CardContent>

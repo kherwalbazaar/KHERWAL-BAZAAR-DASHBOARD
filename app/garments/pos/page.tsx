@@ -54,6 +54,9 @@ export default function POSPage() {
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
   const [currentReceipt, setCurrentReceipt] = useState<any>(null);
   const [totalSales, setTotalSales] = useState(0);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [showProductDialog, setShowProductDialog] = useState(false);
+  const [salePrice, setSalePrice] = useState('');
 
   // Load data from Firebase
   useEffect(() => {
@@ -137,6 +140,47 @@ export default function POSPage() {
 
     setFilteredProducts(filtered)
   }, [products, searchTerm, selectedCategory])
+
+  const handleProductClick = (product: any) => {
+    setSelectedProduct(product);
+    // Calculate MRP (double cost price)
+    const mrp = (product.costPrice || product.sellingPrice || 0) * 2;
+    // Calculate 30% discounted price and round to nearest 10
+    const discountedPrice = mrp * 0.7; // 30% discount means 70% of MRP
+    const roundedPrice = Math.ceil(discountedPrice / 10) * 10;
+    setSalePrice(roundedPrice.toString());
+    setShowProductDialog(true);
+  }
+
+  const addToCartFromDialog = () => {
+    if (!selectedProduct || !salePrice) return;
+    
+    const existingItem = cart.find(item => item.id === selectedProduct.id)
+    
+    if (existingItem) {
+      if (existingItem.quantity < Number(selectedProduct.stock || 0)) {
+        updateQuantity(existingItem.id, existingItem.quantity + 1)
+      } else {
+        toast.error('Insufficient stock')
+      }
+    } else {
+      const newItem: CartItem = {
+        id: selectedProduct.id,
+        name: selectedProduct.name || selectedProduct.productName || selectedProduct.title || selectedProduct.displayName || selectedProduct.sku || `Product ${selectedProduct.id?.slice(-6) || 'Unknown'}`,
+        price: Number(salePrice),
+        quantity: 1,
+        stock: Number(selectedProduct.stock || 0),
+        category: selectedProduct.category || 'Uncategorized',
+        sku: selectedProduct.sku || 'N/A'
+      }
+      setCart([...cart, newItem])
+      toast.success(`${selectedProduct.name || selectedProduct.productName || selectedProduct.title || selectedProduct.displayName || selectedProduct.sku || 'Product'} added to cart`)
+    }
+    
+    setShowProductDialog(false);
+    setSelectedProduct(null);
+    setSalePrice('');
+  }
 
   const addToCart = (product: any) => {
     const existingItem = cart.find(item => item.id === product.id)
@@ -404,7 +448,7 @@ export default function POSPage() {
   return (
     <div className="min-h-screen bg-gray-50 overflow-hidden">
       {/* Fixed Header - Like Home Page */}
-      <div className="fixed top-0 left-0 right-0 bg-blue-500 px-6 py-4 z-50">
+      <div className="fixed top-0 left-0 right-0 bg-blue-500 px-6 py-6 z-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" className="gap-2 bg-white text-blue-600 hover:bg-red-500 hover:text-white" onClick={handleBackClick}>
@@ -481,7 +525,7 @@ export default function POSPage() {
                     <Card 
                       key={product.id} 
                       className={`hover:shadow-lg transition-all cursor-pointer border border-gray-200 hover:border-gray-300 ${getCardColor(product.id)}`}
-                      onClick={() => addToCart(product)}
+                      onClick={() => handleProductClick(product)}
                     >
                       <CardContent className="p-0.5 pb-0 flex flex-col h-full">
                         <div className="text-center w-full flex-1 flex items-center justify-center">
@@ -810,6 +854,62 @@ export default function POSPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+    {/* Product Dialog */}
+    <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Product Details</DialogTitle>
+        </DialogHeader>
+        {selectedProduct && (
+          <div className="space-y-4">
+            {/* Product Name */}
+            <div>
+              <label className="text-sm font-medium text-gray-700">Product Name</label>
+              <p className="text-lg font-semibold">
+                {selectedProduct.name || selectedProduct.productName || selectedProduct.title || selectedProduct.displayName || selectedProduct.sku || `Product ${selectedProduct.id?.slice(-6) || 'Unknown'}`}
+              </p>
+            </div>
+
+            {/* MRP Value */}
+            <div>
+              <label className="text-sm font-medium text-gray-700">MRP Value</label>
+              <p className="text-lg font-semibold text-green-600">
+                ₹{(selectedProduct.costPrice || selectedProduct.sellingPrice || 0) * 2}
+              </p>
+            </div>
+
+            {/* Sale Price Input */}
+            <div>
+              <label className="text-sm font-medium text-gray-700">Sale Price</label>
+              <Input
+                type="number"
+                value={salePrice}
+                onChange={(e) => setSalePrice(e.target.value)}
+                placeholder="Enter sale price"
+                className="mt-1"
+              />
+            </div>
+
+            {/* Stock Info */}
+            <div>
+              <label className="text-sm font-medium text-gray-700">Stock Available</label>
+              <p className="text-sm text-gray-600">
+                {selectedProduct.stock || 0} units
+              </p>
+            </div>
+          </div>
+        )}
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => setShowProductDialog(false)}>
+            Cancel
+          </Button>
+          <Button onClick={addToCartFromDialog} className="bg-green-600 hover:bg-green-700">
+            Add to Cart
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </div>
   )
 }

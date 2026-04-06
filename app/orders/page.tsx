@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Loader2, Search, Download, X, Eye, Printer, Edit, Trash2, AlertTriangle } from 'lucide-react'
+import { Loader2, Search, Download, X, Eye, Printer, Edit, Trash2, AlertTriangle, MoreVertical, Share, ArrowLeft } from 'lucide-react'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, query, orderBy, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore'
 import {
@@ -32,6 +32,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface OrderItem {
   productId: string
@@ -153,15 +159,29 @@ export default function OrdersPage() {
   const stats = useMemo(() => {
     const today = new Date()
     const todayOrders = orders.filter((o) => new Date(o.createdAt).toDateString() === today.toDateString())
-    const cancelledOrders = orders.filter((o) => o.status === 'cancelled')
+    
+    // Calculate total sales (revenue from all completed orders)
+    const totalSales = orders.reduce((sum, order) => sum + (order.paidAmount || 0), 0)
+    
+    // Calculate today's sales
+    const todaySales = todayOrders.reduce((sum, order) => sum + (order.paidAmount || 0), 0)
+    
+    // Calculate total profit (sales - cost)
+    // Note: This would need cost data from products, for now using a simple calculation
+    const totalCost = orders.reduce((sum, order) => {
+      const orderCost = order.items?.reduce((itemSum: number, item: any) => {
+        // Assuming we have cost price in product data, this is a simplified calculation
+        return itemSum + (item.quantity * (item.costPrice || (item.price * 0.7))) // 70% of selling price as cost
+      }, 0) || 0
+      return sum + orderCost
+    }, 0)
+    const totalProfit = totalSales - totalCost
 
     return {
+      totalSales,
       totalOrders: orders.length,
-      totalRevenue: orders.reduce((sum, order) => sum + order.paidAmount, 0),
-      todayOrders: todayOrders.length,
-      todayRevenue: todayOrders.reduce((sum, order) => sum + order.paidAmount, 0),
-      cancelledOrders: cancelledOrders.length,
-      averageOrderValue: orders.length > 0 ? orders.reduce((sum, order) => sum + order.paidAmount, 0) / orders.length : 0,
+      todaySales,
+      totalProfit,
     }
   }, [orders])
 
@@ -213,6 +233,35 @@ export default function OrdersPage() {
     }
   }
 
+  const handleShareOrder = (order: Order) => {
+    const orderDetails = `
+🧾 ORDER DETAILS
+================
+Invoice: ${order.invoiceNumber}
+Customer: ${order.customerName}
+Phone: ${order.customerPhone || 'N/A'}
+Date: ${new Date(order.createdAt).toLocaleDateString()}
+
+Items:
+${order.items.map((item, idx) => `${idx + 1}. ${item.productName} - ${item.quantity} × ₹${item.price} = ₹${item.quantity * item.price}`).join('\n')}
+
+Total Amount: ₹${order.paidAmount}
+Payment: ${order.paymentMethod.toUpperCase()}
+Status: ${order.status || 'completed'}
+    `.trim()
+
+    if (navigator.share) {
+      navigator.share({
+        title: `Order ${order.invoiceNumber}`,
+        text: orderDetails
+      })
+    } else {
+      // Fallback: Copy to clipboard
+      navigator.clipboard.writeText(orderDetails)
+      alert('Order details copied to clipboard!')
+    }
+  }
+
   const exportToCSV = () => {
     const csv = [
       ['Order ID', 'Customer', 'Phone', 'Payment', 'Amount', 'Items', 'Date', 'Status'],
@@ -251,9 +300,17 @@ export default function OrdersPage() {
   return (
     <div className="container mx-auto py-8 px-4">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">🧾 Orders Management</h1>
-        <p className="text-gray-600">Manage and track all customer orders with complete details</p>
+      <div className="mb-8 bg-blue-600 p-6 -mx-8 -mt-8">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" className="gap-2 bg-white text-blue-600 hover:bg-red-500 hover:text-white" onClick={() => window.history.back()}>
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-4xl font-bold mb-2 text-white">🧾 Orders Management</h1>
+            <p className="text-blue-100">Manage and track all customer orders with complete details</p>
+          </div>
+        </div>
       </div>
 
       {error && (
@@ -262,35 +319,45 @@ export default function OrdersPage() {
         </Alert>
       )}
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100">
-          <p className="text-sm text-gray-600 mb-2">🧾 Total Orders</p>
-          <p className="text-3xl font-bold text-blue-600">{stats.totalOrders}</p>
+      {/* Dashboard Summary Cards (4 Cards) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-6">
+        {/* 🟢 Total Sales */}
+        <Card className="p-6 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <div>
+            <h3 className="font-semibold text-green-800 mb-2">Total Sales</h3>
+            <p className="text-2xl font-bold text-green-700">₹{stats.totalSales.toLocaleString()}</p>
+          </div>
         </Card>
-        <Card className="p-6 bg-gradient-to-br from-green-50 to-green-100">
-          <p className="text-sm text-gray-600 mb-2">💰 Total Revenue</p>
-          <p className="text-3xl font-bold text-green-600">₹{stats.totalRevenue.toLocaleString()}</p>
+
+        {/* 🔵 Total Orders */}
+        <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <div>
+            <h3 className="font-semibold text-blue-800 mb-2">Total Orders</h3>
+            <p className="text-2xl font-bold text-blue-700">{stats.totalOrders} Orders</p>
+          </div>
         </Card>
-        <Card className="p-6 bg-gradient-to-br from-orange-50 to-orange-100">
-          <p className="text-sm text-gray-600 mb-2">📦 Today Orders</p>
-          <p className="text-3xl font-bold text-orange-600">{stats.todayOrders}</p>
-          <p className="text-xs text-gray-600 mt-1">₹{stats.todayRevenue.toLocaleString()}</p>
+
+        {/* 🟡 Today Sales */}
+        <Card className="p-6 bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+          <div>
+            <h3 className="font-semibold text-yellow-800 mb-2">Today Sales</h3>
+            <p className="text-2xl font-bold text-yellow-700">₹{stats.todaySales.toLocaleString()}</p>
+          </div>
         </Card>
-        <Card className="p-6 bg-gradient-to-br from-red-50 to-red-100">
-          <p className="text-sm text-gray-600 mb-2">❌ Cancelled</p>
-          <p className="text-3xl font-bold text-red-600">{stats.cancelledOrders}</p>
-        </Card>
-        <Card className="p-6 bg-gradient-to-br from-purple-50 to-purple-100">
-          <p className="text-sm text-gray-600 mb-2">📊 Avg Value</p>
-          <p className="text-3xl font-bold text-purple-600">₹{stats.averageOrderValue.toFixed(0)}</p>
+
+        {/* 🔴 Total Profit */}
+        <Card className="p-6 bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+          <div>
+            <h3 className="font-semibold text-red-800 mb-2">Total Profit</h3>
+            <p className="text-2xl font-bold text-red-700">₹{stats.totalProfit.toLocaleString()}</p>
+          </div>
         </Card>
       </div>
 
       {/* Orders Table */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden pt-0">
         {/* Mini Header */}
-        <div className="bg-gray-50 px-6 py-4 border-b">
+        <div className="bg-gray-50 px-6 py-2 border-b">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
               📋 All Orders
@@ -319,28 +386,28 @@ export default function OrdersPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
-                    <TableHead>Invoice #</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Date & Time</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Payment</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="font-semibold text-center">Invoice #</TableHead>
+                    <TableHead className="font-semibold text-center">Customer</TableHead>
+                    <TableHead className="font-semibold text-center">Phone</TableHead>
+                    <TableHead className="font-semibold text-center">Date & Time</TableHead>
+                    <TableHead className="font-semibold text-center">Amount</TableHead>
+                    <TableHead className="font-semibold text-center">Payment</TableHead>
+                    <TableHead className="font-semibold text-center">Status</TableHead>
+                    <TableHead className="font-semibold text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginatedOrders.map((order) => (
                     <TableRow key={order.id} className="hover:bg-gray-50">
-                      <TableCell className="font-bold text-blue-600">{order.invoiceNumber}</TableCell>
-                      <TableCell className="font-medium">{order.customerName}</TableCell>
-                      <TableCell>{order.customerPhone || '-'}</TableCell>
-                      <TableCell className="text-sm">
+                      <TableCell className="font-bold text-blue-600 text-center">{order.invoiceNumber}</TableCell>
+                      <TableCell className="font-medium text-center">{order.customerName}</TableCell>
+                      <TableCell className="text-center">{order.customerPhone || '-'}</TableCell>
+                      <TableCell className="text-sm text-center">
                         <div>{new Date(order.createdAt).toLocaleDateString()}</div>
                         <div className="text-gray-500">{new Date(order.createdAt).toLocaleTimeString()}</div>
                       </TableCell>
-                      <TableCell className="font-bold text-green-600 text-right">₹{order.paidAmount}</TableCell>
-                      <TableCell>
+                      <TableCell className="font-bold text-green-600 text-center">₹{order.paidAmount}</TableCell>
+                      <TableCell className="text-center">
                         <Badge
                           variant="outline"
                           className={
@@ -356,7 +423,7 @@ export default function OrdersPage() {
                           {order.paymentMethod.toUpperCase()}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         <Badge
                           className={
                             order.status === 'completed'
@@ -369,125 +436,120 @@ export default function OrdersPage() {
                           {order.status || 'completed'}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          {/* View Details */}
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button size="sm" variant="outline" className="gap-1" title="View Details">
-                                <Eye className="h-3 w-3" />
-                                View
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-2xl">
-                              <DialogHeader>
-                                <DialogTitle>Order Details - {order.invoiceNumber}</DialogTitle>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                {/* Customer Info */}
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <p className="text-sm text-gray-600">Customer Name</p>
-                                    <p className="font-semibold">{order.customerName}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-sm text-gray-600">Phone</p>
-                                    <p className="font-semibold">{order.customerPhone || '-'}</p>
-                                  </div>
-                                </div>
-
-                                {/* Items */}
-                                <div>
-                                  <p className="font-semibold mb-2">📦 Items</p>
-                                  <div className="space-y-2">
-                                    {order.items.map((item, idx) => (
-                                      <div key={idx} className="flex justify-between bg-gray-50 p-2 rounded">
-                                        <span>{item.productName}</span>
-                                        <span>{item.quantity} × ₹{item.price} = ₹{item.quantity * item.price}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                {/* Summary */}
-                                <div className="bg-blue-50 p-4 rounded">
-                                  <div className="flex justify-between mb-2">
-                                    <span>Subtotal:</span>
-                                    <span>₹{order.items.reduce((sum, item) => sum + item.quantity * item.price, 0)}</span>
-                                  </div>
-                                  <div className="border-t pt-2">
-                                    <div className="flex justify-between font-bold text-lg">
-                                      <span>Total:</span>
-                                      <span className="text-green-600">₹{order.paidAmount}</span>
+                      <TableCell className="text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {/* View Details */}
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View
+                                </DropdownMenuItem>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Order Details - {order.invoiceNumber}</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  {/* Customer Info */}
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <p className="text-sm text-gray-600">Customer Name</p>
+                                      <p className="font-semibold">{order.customerName}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm text-gray-600">Phone</p>
+                                      <p className="font-semibold">{order.customerPhone || '-'}</p>
                                     </div>
                                   </div>
+
+                                  {/* Items */}
+                                  <div>
+                                    <p className="font-semibold mb-2">📦 Items</p>
+                                    <div className="space-y-2">
+                                      {order.items.map((item, idx) => (
+                                        <div key={idx} className="flex justify-between bg-gray-50 p-2 rounded">
+                                          <span>{item.productName}</span>
+                                          <span>{item.quantity} × ₹{item.price} = ₹{item.quantity * item.price}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Summary */}
+                                  <div className="bg-blue-50 p-4 rounded">
+                                    <div className="flex justify-between mb-2">
+                                      <span>Subtotal:</span>
+                                      <span>₹{order.items.reduce((sum, item) => sum + item.quantity * item.price, 0)}</span>
+                                    </div>
+                                    <div className="border-t pt-2">
+                                      <div className="flex justify-between font-bold text-lg">
+                                        <span>Total:</span>
+                                        <span className="text-green-600">₹{order.paidAmount}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Payment Info */}
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <p className="text-gray-600">Payment Method</p>
+                                      <p className="font-semibold">{order.paymentMethod.toUpperCase()}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-gray-600">Date & Time</p>
+                                      <p className="font-semibold">{new Date(order.createdAt).toLocaleString()}</p>
+                                    </div>
+                                  </div>
+
+                                  {order.notes && (
+                                    <div>
+                                      <p className="text-sm text-gray-600">Notes</p>
+                                      <p className="text-sm">{order.notes}</p>
+                                    </div>
+                                  )}
                                 </div>
+                              </DialogContent>
+                            </Dialog>
 
-                                {/* Payment Info */}
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div>
-                                    <p className="text-gray-600">Payment Method</p>
-                                    <p className="font-semibold">{order.paymentMethod.toUpperCase()}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-gray-600">Date & Time</p>
-                                    <p className="font-semibold">{new Date(order.createdAt).toLocaleString()}</p>
-                                  </div>
-                                </div>
+                            {/* Print */}
+                            <DropdownMenuItem onClick={() => window.print()}>
+                              <Printer className="h-4 w-4 mr-2" />
+                              Print
+                            </DropdownMenuItem>
 
-                                {order.notes && (
-                                  <div>
-                                    <p className="text-sm text-gray-600">Notes</p>
-                                    <p className="text-sm">{order.notes}</p>
-                                  </div>
-                                )}
-                              </div>
-                            </DialogContent>
-                          </Dialog>
+                            {/* Share */}
+                            <DropdownMenuItem onClick={() => handleShareOrder(order)}>
+                              <Share className="h-4 w-4 mr-2" />
+                              Share
+                            </DropdownMenuItem>
 
-                          {/* Print Bill */}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="gap-1"
-                            onClick={() => window.print()}
-                            title="Print Bill"
-                          >
-                            <Printer className="h-3 w-3" />
-                            Print
-                          </Button>
-
-                          {/* Delete */}
-                          {deleteConfirm === order.id ? (
-                            <div className="flex gap-1">
-                              <Button
-                                size="sm"
-                                className="bg-red-600 hover:bg-red-700 gap-1"
-                                onClick={() => deleteOrder(order.id)}
-                              >
-                                Confirm
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setDeleteConfirm(null)}
-                              >
-                                Cancel
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="gap-1"
-                              onClick={() => setDeleteConfirm(order.id)}
-                              title="Delete Order"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                              Delete
-                            </Button>
-                          )}
-                        </div>
+                            {/* Delete */}
+                            {deleteConfirm === order.id ? (
+                              <>
+                                <DropdownMenuItem onClick={() => deleteOrder(order.id)} className="text-red-600">
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Confirm Delete
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setDeleteConfirm(null)}>
+                                  <X className="h-4 w-4 mr-2" />
+                                  Cancel
+                                </DropdownMenuItem>
+                              </>
+                            ) : (
+                              <DropdownMenuItem onClick={() => setDeleteConfirm(order.id)} className="text-red-600">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
