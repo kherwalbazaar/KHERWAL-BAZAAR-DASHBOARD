@@ -287,90 +287,28 @@ export default function OrdersPage() {
         </Card>
       </div>
 
-      {/* Filters Section */}
-      <Card className="p-6 mb-8">
-        <h2 className="text-xl font-bold mb-4">🔍 Search & Filters</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Search */}
-          <div className="lg:col-span-2">
-            <label className="block text-sm font-medium mb-2">Search by name / phone / ID</label>
+      {/* Orders Table */}
+      <Card className="overflow-hidden">
+        {/* Mini Header */}
+        <div className="bg-gray-50 px-6 py-4 border-b">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              📋 All Orders
+              <span className="text-sm text-gray-500">({filteredOrders.length} orders)</span>
+            </h3>
+            {/* Search Section */}
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder="John Doe, 9876543210, INV1000..."
+                placeholder="Search orders..."
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="pl-10"
+                className="pl-10 w-64"
               />
             </div>
           </div>
-
-          {/* Date Range */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Date Range</label>
-            <Select value={filters.dateRange} onValueChange={(value) => handleFilterChange('dateRange', value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Time</SelectItem>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Payment Method */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Payment Method</label>
-            <Select value={filters.paymentMethod} onValueChange={(value) => handleFilterChange('paymentMethod', value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Methods</SelectItem>
-                <SelectItem value="cash">Cash</SelectItem>
-                <SelectItem value="upi">UPI</SelectItem>
-                <SelectItem value="card">Card</SelectItem>
-                <SelectItem value="bank">Bank Transfer</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Status */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Status</label>
-            <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
-
-        {/* Filter Actions */}
-        <div className="flex gap-3 mt-4">
-          <Button onClick={clearFilters} variant="outline" className="gap-2">
-            <X className="h-4 w-4" />
-            Clear Filters
-          </Button>
-          <Button onClick={exportToCSV} className="gap-2 bg-blue-600 hover:bg-blue-700">
-            <Download className="h-4 w-4" />
-            Export CSV
-          </Button>
-        </div>
-      </Card>
-
-      {/* Orders Table */}
-      <Card className="overflow-hidden">
         {filteredOrders.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">No orders found matching your filters</p>

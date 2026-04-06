@@ -206,7 +206,7 @@ export default function AllProductsPage() {
       {/* Header */}
       <div className="flex items-center justify-between bg-blue-500 p-4 -mx-6 -mt-6">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" className="gap-2 bg-white text-blue-600 hover:bg-red-500 hover:text-white" onClick={() => router.back()}>
+          <Button variant="outline" size="sm" className="gap-2 bg-white text-blue-600 hover:bg-red-500 hover:text-white border-2 border-white shadow-lg z-10" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>

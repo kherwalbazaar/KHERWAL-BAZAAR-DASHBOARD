@@ -195,6 +195,24 @@ export default function POSPage() {
     return calculateSubtotal() + calculateTax()
   }
 
+  const handleBackClick = () => {
+    if (cart.length > 0) {
+      setShowWarningDialog(true)
+    } else {
+      window.history.back()
+    }
+  }
+
+  const handleCancelWarning = () => {
+    setShowWarningDialog(false)
+  }
+
+  const handleDiscardAndGoBack = () => {
+    setCart([])
+    setShowWarningDialog(false)
+    window.history.back()
+  }
+
   const handleCompleteCheckout = async () => {
     try {
       setIsProcessing(true);
@@ -290,27 +308,6 @@ export default function POSPage() {
       setIsProcessing(false);
     }
   };
-
-  // Handle Back button click with cart warning
-  const handleBackClick = () => {
-    if (cart.length > 0) {
-      setShowWarningDialog(true)
-    } else {
-      window.history.back()
-    }
-  }
-
-  // Handle discard cart and go back
-  const handleDiscardAndGoBack = () => {
-    setCart([])
-    setShowWarningDialog(false)
-    window.history.back()
-  }
-
-  // Handle cancel warning dialog
-  const handleCancelWarning = () => {
-    setShowWarningDialog(false)
-  }
 
   const processSale = async () => {
     if (cart.length === 0) {

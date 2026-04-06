@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { 
   Home, 
@@ -164,6 +165,7 @@ interface GarmentsSidebarProps {
 }
 
 export function GarmentsSidebar({ isOpen, onClose }: GarmentsSidebarProps) {
+  const router = useRouter()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
 
   const toggleExpanded = (itemId: string) => {
@@ -181,8 +183,23 @@ export function GarmentsSidebar({ isOpen, onClose }: GarmentsSidebarProps) {
       // Handle logout
       onClose()
     } else {
-      // Handle navigation
-      console.log(`Navigate to: ${item.id}`)
+      // Handle navigation based on item ID
+      const routeMap: { [key: string]: string } = {
+        'new-sale': '/garments/pos',
+        'add-product': '/garments/products/add-product',
+        'all-products': '/garments/products/all-products',
+        'customer-list': '/customers',
+        'add-customer': '/customers/add-customer',
+        'all-orders': '/orders',
+        'billing': '/billing',
+        'reports': '/reports',
+        'settings': '/settings'
+      }
+      
+      const route = routeMap[item.id]
+      if (route) {
+        router.push(route)
+      }
       onClose()
     }
   }

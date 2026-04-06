@@ -132,7 +132,7 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
       children: [
         {
           label: 'POS (New Sale)',
-          href: '/pos',
+          href: '/garments/pos',
           icon: Plus,
           count: null,
         },
@@ -140,18 +140,6 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
           label: 'Orders',
           href: '/orders',
           icon: List,
-          count: null,
-        },
-        {
-          label: 'Billing',
-          href: '/billing',
-          icon: FileText,
-          count: null,
-        },
-        {
-          label: 'Returns',
-          href: '/returns',
-          icon: RotateCcw,
           count: null,
         },
       ],
@@ -224,18 +212,6 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
           href: '/garments/orders',
           icon: List,
           count: 18,
-        },
-        {
-          label: 'Billing',
-          href: '/garments/billing',
-          icon: FileText,
-          count: 45,
-        },
-        {
-          label: 'Returns',
-          href: '/garments/returns',
-          icon: RotateCcw,
-          count: null,
         },
       ],
     },
@@ -509,12 +485,6 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
       href: '/printing/work-status',
       icon: Settings,
       count: 12,
-    },
-    {
-      label: 'Billing',
-      href: '/printing/billing',
-      icon: DollarSign,
-      count: 23,
     },
     {
       label: 'Stock',
