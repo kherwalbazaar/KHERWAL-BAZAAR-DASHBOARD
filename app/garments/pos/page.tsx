@@ -857,57 +857,66 @@ export default function POSPage() {
 
     {/* Product Dialog */}
     <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Product Details</DialogTitle>
-        </DialogHeader>
-        {selectedProduct && (
-          <div className="space-y-4">
-            {/* Product Name */}
-            <div>
-              <label className="text-sm font-medium text-gray-700">Product Name</label>
-              <p className="text-lg font-semibold">
-                {selectedProduct.name || selectedProduct.productName || selectedProduct.title || selectedProduct.displayName || selectedProduct.sku || `Product ${selectedProduct.id?.slice(-6) || 'Unknown'}`}
-              </p>
-            </div>
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+        {/* Dialog Header with Background */}
+        <div className="bg-blue-600 px-6 py-4">
+          <DialogTitle className="text-white text-lg font-semibold">
+            Product Details
+          </DialogTitle>
+        </div>
+        
+        {/* Dialog Content */}
+        <div className="p-6">
+          {selectedProduct && (
+            <div className="space-y-4">
+              {/* Product Name */}
+              <div>
+                <label className="text-sm font-medium text-gray-700">Product Name</label>
+                <p className="text-lg font-semibold">
+                  {selectedProduct.name || selectedProduct.productName || selectedProduct.title || selectedProduct.displayName || selectedProduct.sku || `Product ${selectedProduct.id?.slice(-6) || 'Unknown'}`}
+                </p>
+              </div>
 
-            {/* MRP Value */}
-            <div>
-              <label className="text-sm font-medium text-gray-700">MRP Value</label>
-              <p className="text-lg font-semibold text-green-600">
-                ₹{(selectedProduct.costPrice || selectedProduct.sellingPrice || 0) * 2}
-              </p>
-            </div>
+              {/* MRP Value */}
+              <div>
+                <label className="text-sm font-medium text-gray-700">MRP Value</label>
+                <p className="text-lg font-semibold text-green-600">
+                  ₹{(selectedProduct.costPrice || selectedProduct.sellingPrice || 0) * 2}
+                </p>
+              </div>
 
-            {/* Sale Price Input */}
-            <div>
-              <label className="text-sm font-medium text-gray-700">Sale Price</label>
-              <Input
-                type="number"
-                value={salePrice}
-                onChange={(e) => setSalePrice(e.target.value)}
-                placeholder="Enter sale price"
-                className="mt-1"
-              />
-            </div>
+              {/* Sale Price Input */}
+              <div>
+                <label className="text-sm font-medium text-gray-700">Sale Price</label>
+                <Input
+                  type="number"
+                  value={salePrice}
+                  onChange={(e) => setSalePrice(e.target.value)}
+                  placeholder="Enter sale price"
+                  className="mt-1"
+                />
+              </div>
 
-            {/* Stock Info */}
-            <div>
-              <label className="text-sm font-medium text-gray-700">Stock Available</label>
-              <p className="text-sm text-gray-600">
-                {selectedProduct.stock || 0} units
-              </p>
+              {/* Stock Info */}
+              <div>
+                <label className="text-sm font-medium text-gray-700">Stock Available</label>
+                <p className="text-sm text-gray-600">
+                  {selectedProduct.stock || 0} units
+                </p>
+              </div>
             </div>
-          </div>
-        )}
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => setShowProductDialog(false)}>
+          )}
+        </div>
+        
+        {/* Dialog Footer */}
+        <div className="px-6 py-4 bg-gray-50 border-t flex justify-between">
+          <Button variant="destructive" onClick={() => setShowProductDialog(false)} className="flex-1 mr-2">
             Cancel
           </Button>
-          <Button onClick={addToCartFromDialog} className="bg-green-600 hover:bg-green-700">
+          <Button onClick={addToCartFromDialog} className="bg-green-600 hover:bg-green-700 flex-1 ml-2">
             Add to Cart
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
     </div>
