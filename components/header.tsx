@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { LogOut, User, LogIn, Shield } from 'lucide-react'
+import { LogOut, User, LogIn, Shield, RefreshCw, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -25,9 +25,18 @@ import { cn } from '@/lib/utils'
 interface HeaderProps {
   activeSection?: string
   setActiveSection?: (section: string) => void
+  dataStatus?: 'green' | 'yellow' | 'red'
+  handleRefresh?: () => void
+  isRefreshing?: boolean
 }
 
-export function Header({ activeSection = 'garments', setActiveSection }: HeaderProps) {
+export function Header({ 
+  activeSection = 'garments', 
+  setActiveSection,
+  dataStatus = 'green',
+  handleRefresh,
+  isRefreshing = false
+}: HeaderProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [activeButton, setActiveButton] = useState<string | null>('kherwal')
@@ -61,7 +70,7 @@ export function Header({ activeSection = 'garments', setActiveSection }: HeaderP
     <>
       {/* Header Bar */}
       <header className="fixed top-0 right-0 left-0 h-24 bg-blue-500 border-b border-border shadow-sm z-40">
-        <div className="h-full px-6 flex items-center justify-between">
+        <div className="h-full px-6 flex items-center justify-between relative">
           {/* Left Side - Logo, Title and Tagline */}
           <div className="flex items-center gap-3">
             <img 
@@ -78,6 +87,37 @@ export function Header({ activeSection = 'garments', setActiveSection }: HeaderP
               </p>
             </div>
           </div>
+
+          {/* Right - Sync Status Button */}
+          {handleRefresh && (
+            <div className="absolute right-30 top-0 flex items-start">
+              <Button 
+                onClick={handleRefresh} 
+                variant="outline"
+                size="default"
+                className="flex items-center gap-2 font-medium transition-all duration-200 h-10 !bg-white !text-green-600 !border-green-300 cursor-pointer hover:!bg-green-50"
+              >
+                <div className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  dataStatus === 'green' ? 'bg-green-500' :
+                  dataStatus === 'yellow' ? 'bg-yellow-500 animate-pulse' :
+                  'bg-red-500'
+                }`}></div>
+                {dataStatus === 'green' && '✓ Up to date'}
+                {dataStatus === 'yellow' && (
+                  <>
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    Syncing data...
+                  </>
+                )}
+                {dataStatus === 'red' && (
+                  <>
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    Sync failed
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
           
           {/* Right Side - Controls */}
           <div className="flex flex-col justify-center items-end gap-4">
@@ -134,7 +174,7 @@ export function Header({ activeSection = 'garments', setActiveSection }: HeaderP
                     className={activeButton === 'kherwal' ? 
                       'text-blue-600 transform -translate-y-0.5 transition-all duration-200 ease-in-out' 
                     : 
-                      'text-white transform translate-y-0 transition-all duration-200 ease-in-out'
+                      'text-white transform translate-y-0 transition-all duration-200 ease-in-out hover:text-white'
                     }
                   >
                     KHERWAL BAZAAR

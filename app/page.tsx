@@ -213,45 +213,18 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header activeSection={activeSection} setActiveSection={setActiveSection} />
+      <Header 
+        activeSection={activeSection} 
+        setActiveSection={setActiveSection}
+        dataStatus={dataStatus}
+        handleRefresh={handleRefresh}
+        isRefreshing={isRefreshing}
+      />
       <div className="flex flex-1">
         <SidebarNav activeSection={activeSection} />
         {/* Main Content */}
         <main className="flex-1 ml-64 bg-background">
         <div className="p-8 w-full mt-20">
-          {/* Sync Status Button - Single Section */}
-          <div className="mb-6 flex justify-end">
-            <Button 
-              onClick={handleRefresh} 
-              disabled={dataStatus === 'green' || dataStatus === 'yellow'}
-              variant="outline"
-              size="sm"
-              className={`flex items-center gap-2 font-medium transition-all duration-200 ${
-                dataStatus === 'green' 
-                  ? 'bg-green-50 text-green-700 border-green-300 cursor-default' 
-                  : dataStatus === 'yellow'
-                  ? 'bg-yellow-100 text-yellow-700 border-yellow-400 cursor-not-allowed'
-                  : 'bg-red-50 text-red-600 border-red-400 hover:bg-red-100 hover:border-red-500 hover:shadow-md hover:scale-105 cursor-pointer'
-              }`}
-            >
-              <div 
-                className={`w-2.5 h-2.5 rounded-full transition-all ${
-                  dataStatus === 'green' ? 'bg-green-500' :
-                  dataStatus === 'yellow' ? 'bg-yellow-500 animate-pulse' :
-                  'bg-red-500'
-                }`}
-              ></div>
-              {dataStatus === 'green' && '✓ Up to date'}
-              {dataStatus === 'yellow' && (
-                <>
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                  Syncing data...
-                </>
-              )}
-              {dataStatus === 'red' && 'Sync Data'}
-            </Button>
-          </div>
-          
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <Card className="bg-blue-500 text-white">
