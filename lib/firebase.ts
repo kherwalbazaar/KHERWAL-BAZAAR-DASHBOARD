@@ -19,7 +19,13 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+let analytics: any = null;
+
+// Only initialize analytics on client side
+if (typeof window !== 'undefined') {
+  analytics = getAnalytics(app);
+}
+
 const db = getFirestore(app);
 
 // Test Firebase connection

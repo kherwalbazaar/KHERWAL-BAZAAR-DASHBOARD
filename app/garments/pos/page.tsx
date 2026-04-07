@@ -48,7 +48,6 @@ export default function POSPage() {
   const [loading, setLoading] = useState(true)
   const [showWarningDialog, setShowWarningDialog] = useState(false)
   const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
-  const [selectedDiscount, setSelectedDiscount] = useState('');
   const [paidAmount, setPaidAmount] = useState(0);
   const [returnAmount, setReturnAmount] = useState(0);
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
@@ -263,8 +262,8 @@ export default function POSPage() {
       
       // Calculate final amounts
       const subtotal = calculateSubtotal();
-      const discountPercent = parseInt(selectedDiscount) || 0;
-      const finalTotal = subtotal * (1 - discountPercent / 100);
+      const discountPercent = 30; // Fixed 30% discount
+      const finalTotal = subtotal * 0.7; // 30% discount means 70% of subtotal
       const returnAmount = Math.max(0, paidAmount - finalTotal);
       
       // First, update stock for each cart item
@@ -340,7 +339,6 @@ export default function POSPage() {
       
       // Clear cart
       setCart([]);
-      setSelectedDiscount('');
       setPaidAmount(0);
       
       toast.success('Checkout completed successfully!');
@@ -659,122 +657,64 @@ export default function POSPage() {
       </Dialog>
     {/* Checkout Dialog */}
       <Dialog open={showCheckoutDialog}>
-        <DialogContent className="sm:max-w-md" showCloseButton={false}>
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md p-0" showCloseButton={false}>
+          <DialogHeader className="bg-blue-600 px-6 py-4">
             <div className="flex items-center justify-between">
-              <DialogTitle>Checkout Summary</DialogTitle>
-              <Button size="sm" variant="outline" onClick={() => setShowCheckoutDialog(false)}>
+              <DialogTitle className="text-white text-lg font-semibold">Checkout Summary</DialogTitle>
+              <Button size="sm" variant="outline" onClick={() => {
+                  setShowCheckoutDialog(false);
+                  setPaidAmount(0);
+                }} className="bg-white/20 text-white border-white/30 hover:bg-white/30">
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 p-6">
             {/* Total MRP */}
             <div className="flex justify-between text-sm">
-              <span>Total MRP:</span>
-              <span className="font-semibold">₹{calculateSubtotal().toLocaleString()}</span>
+              <span className="text-base font-medium">Total MRP:</span>
+              <span className="text-xl font-bold text-gray-900">₹{calculateSubtotal().toLocaleString()}</span>
             </div>
 
-            {/* Discount Selection - Small Buttons in Single Line */}
-            <div className="flex items-center gap-1">
-              <label className="text-sm font-medium">Discount (%):</label>
-              <div className="flex gap-1">
-                <Button 
-                  size="sm" 
-                  variant={selectedDiscount === '20' ? 'default' : 'outline'}
-                  onClick={() => setSelectedDiscount('20')}
-                  className={`h-6 px-2 text-xs shadow-sm ${
-                    selectedDiscount === '20' 
-                      ? 'bg-blue-500 text-white border-blue-500' 
-                      : 'bg-white text-blue-600 border-blue-300 hover:bg-blue-50'
-                  }`}
-                >
-                  20%
-                </Button>
-                <span className="text-gray-400">|</span>
-                <Button 
-                  size="sm" 
-                  variant={selectedDiscount === '25' ? 'default' : 'outline'}
-                  onClick={() => setSelectedDiscount('25')}
-                  className={`h-6 px-2 text-xs shadow-sm ${
-                    selectedDiscount === '25' 
-                      ? 'bg-blue-500 text-white border-blue-500' 
-                      : 'bg-white text-blue-600 border-blue-300 hover:bg-blue-50'
-                  }`}
-                >
-                  25%
-                </Button>
-                <span className="text-gray-400">|</span>
-                <Button 
-                  size="sm" 
-                  variant={selectedDiscount === '30' ? 'default' : 'outline'}
-                  onClick={() => setSelectedDiscount('30')}
-                  className={`h-6 px-2 text-xs shadow-sm ${
-                    selectedDiscount === '30' 
-                      ? 'bg-blue-500 text-white border-blue-500' 
-                      : 'bg-white text-blue-600 border-blue-300 hover:bg-blue-50'
-                  }`}
-                >
-                  30%
-                </Button>
-                <span className="text-gray-400">|</span>
-                <Button 
-                  size="sm" 
-                  variant={selectedDiscount === '35' ? 'default' : 'outline'}
-                  onClick={() => setSelectedDiscount('35')}
-                  className={`h-6 px-2 text-xs shadow-sm ${
-                    selectedDiscount === '35' 
-                      ? 'bg-blue-500 text-white border-blue-500' 
-                      : 'bg-white text-blue-600 border-blue-300 hover:bg-blue-50'
-                  }`}
-                >
-                  35%
-                </Button>
-                <span className="text-gray-400">|</span>
-                <Button 
-                  size="sm" 
-                  variant={selectedDiscount === '40' ? 'default' : 'outline'}
-                  onClick={() => setSelectedDiscount('40')}
-                  className={`h-6 px-2 text-xs shadow-sm ${
-                    selectedDiscount === '40' 
-                      ? 'bg-blue-500 text-white border-blue-500' 
-                      : 'bg-white text-blue-600 border-blue-300 hover:bg-blue-50'
-                  }`}
-                >
-                  40%
-                </Button>
-              </div>
+            {/* Discounted Price Display */}
+            <div className="flex justify-between text-sm">
+              <span className="text-base font-medium">Discounted Price:</span>
+              <span className="text-xl font-bold text-green-600">₹{(calculateSubtotal() * 0.7).toLocaleString()}</span>
             </div>
 
             {/* Paid Amount */}
             <div>
-              <label className="text-sm font-medium">Paid Amount:</label>
+              <label className="text-sm font-medium">Paid Amount: <span className="text-red-500">*</span></label>
               <Input 
-                type="number" 
-                value={paidAmount} 
-                onChange={(e) => setPaidAmount(Number(e.target.value.replace(/^0+/, '')))}
-                placeholder="Enter paid amount"
-                className="no-leading-zeros"
+                type="text" 
+                value={paidAmount === 0 ? '' : paidAmount.toString()} 
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setPaidAmount(value === '' ? 0 : Number(value));
+                }}
+                placeholder="000"
+                className="text-2xl font-bold border-red-300 focus:border-red-500"
+                style={{ fontSize: '30px' }}
+                required
               />
-            </div>
-
-            {/* Return Amount */}
-            <div className="flex justify-between text-sm">
-              <span>Return Amount:</span>
-              <span className="font-semibold">₹{Math.max(0, paidAmount - (calculateSubtotal() * (1 - (parseInt(selectedDiscount) || 0) / 100))).toLocaleString()}</span>
+              {paidAmount === 0 && (
+                <p className="text-xs text-red-500 mt-1">Paid amount is required</p>
+              )}
             </div>
 
             {/* Final Total */}
-            <div className="flex justify-between font-bold text-lg border-t pt-2">
-              <span>Final Total:</span>
-              <span className="text-blue-600">₹{(calculateSubtotal() * (1 - (parseInt(selectedDiscount) || 0) / 100)).toLocaleString()}</span>
+            <div className="flex justify-between font-bold border-t pt-2">
+              <span className="text-2xl font-bold">Final Total:</span>
+              <span className="text-blue-600 text-2xl font-bold" style={{ fontSize: '30px' }}>
+                ₹{paidAmount === 0 ? (calculateSubtotal() * 0.7).toLocaleString() : (paidAmount < (calculateSubtotal() * 0.7) ? paidAmount.toLocaleString() : Math.max(0, (calculateSubtotal() * 0.7) - paidAmount).toLocaleString())}
+              </span>
             </div>
           </div>
           <DialogFooter>
             <Button 
               onClick={handleCompleteCheckout}
               className="w-full"
-              disabled={isProcessing}
+              disabled={isProcessing || paidAmount === 0}
             >
               {isProcessing ? 'Processing...' : 'Complete Checkout'}
             </Button>
