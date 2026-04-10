@@ -38,8 +38,9 @@ import {
   TrendingUp,
   TrendingDown,
   BookOpen,
-  PieChart,
+  CheckCircle,
   Clock,
+  PieChart,
   Percent,
   Ticket,
   Store,
@@ -71,6 +72,14 @@ interface SectionData {
 export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [sectionData, setSectionData] = useState<SectionData>({})
+  const [printingData, setPrintingData] = useState({
+    totalOrders: 0,
+    totalCustomers: 0,
+    totalJobTypes: 0,
+    pendingOrders: 0,
+    inProgressOrders: 0,
+    completedOrders: 0
+  })
   const [loading, setLoading] = useState(true)
   const pathname = usePathname()
 
@@ -87,25 +96,55 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
     const loadSectionData = async () => {
       try {
         setLoading(true)
-        const { getProducts } = await import('@/lib/firebase')
-        const result = await getProducts()
         
-        if (result.success && result.products) {
-          const products = result.products
-          const totalProducts = products.length
-          const totalStock = products.reduce((sum, product) => sum + product.stock, 0)
-          const totalSale = products.reduce((sum, product) => sum + (product.costPrice * product.stock), 0)
-          const totalOrders = Math.floor(totalStock * 0.8)
-          const activeCustomers = Math.floor(totalStock * 0.3)
-          const growthRate = 23.5 + (totalProducts * 0.5)
+        // Load Garments Data
+        if (activeSection === 'garments' || activeSection === 'dashboard') {
+          const { getProducts } = await import('@/lib/firebase')
+          const result = await getProducts()
+          
+          if (result.success && result.products) {
+            const products = result.products
+            const totalProducts = products.length
+            const totalStock = products.reduce((sum, product) => sum + product.stock, 0)
+            const totalSale = products.reduce((sum, product) => sum + (product.costPrice * product.stock), 0)
+            const totalOrders = Math.floor(totalStock * 0.8)
+            const activeCustomers = Math.floor(totalStock * 0.3)
+            const growthRate = 23.5 + (totalProducts * 0.5)
 
-          setSectionData({
-            totalSale,
-            totalOrders,
-            activeCustomers,
-            totalProducts,
-            totalStock,
-            growthRate
+            setSectionData({
+              totalSale,
+              totalOrders,
+              activeCustomers,
+              totalProducts,
+              totalStock,
+              growthRate
+            })
+          }
+        }
+        
+        // Load Printing Data
+        if (activeSection === 'printing') {
+          const { getPrintingOrders, getPrintingCustomers, getJobTypes } = await import('@/lib/firebase')
+          
+          // Load orders
+          const ordersResult = await getPrintingOrders()
+          const orders = ordersResult.success && ordersResult.orders ? ordersResult.orders : []
+          
+          // Load customers
+          const customersResult = await getPrintingCustomers()
+          const customers = customersResult.success && customersResult.customers ? customersResult.customers : []
+          
+          // Load job types
+          const jobTypesResult = await getJobTypes()
+          const jobTypes = jobTypesResult.success && jobTypesResult.jobTypes ? jobTypesResult.jobTypes : []
+          
+          setPrintingData({
+            totalOrders: orders.length,
+            totalCustomers: customers.length,
+            totalJobTypes: jobTypes.length,
+            pendingOrders: orders.filter((o: any) => o.status === 'pending').length,
+            inProgressOrders: orders.filter((o: any) => o.status === 'in-progress').length,
+            completedOrders: orders.filter((o: any) => o.status === 'completed').length
           })
         }
       } catch (error) {
@@ -115,10 +154,7 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
       }
     }
 
-    // Load data based on active section
-    if (activeSection === 'garments' || activeSection === 'dashboard') {
-      loadSectionData()
-    }
+    loadSectionData()
   }, [activeSection])
 
   // Define navigation items for different sections
@@ -466,37 +502,43 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
       label: 'Orders List',
       href: '/printing/orders',
       icon: List,
-      count: 18,
+      count: loading ? null : printingData.totalOrders,
     },
     {
-      label: 'Job Types',
-      href: '/printing/job-types',
-      icon: FileText,
-      count: 6,
+      label: 'Pending Orders',
+      href: '/printing/orders?status=pending',
+      icon: Clock,
+      count: loading ? null : printingData.pendingOrders,
+    },
+    {
+      label: 'In Progress',
+      href: '/printing/orders?status=in-progress',
+      icon: Settings,
+      count: loading ? null : printingData.inProgressOrders,
+    },
+    {
+      label: 'Completed',
+      href: '/printing/orders?status=completed',
+      icon: CheckCircle,
+      count: loading ? null : printingData.completedOrders,
     },
     {
       label: 'Customers',
       href: '/printing/customers',
       icon: Users,
-      count: 45,
+      count: loading ? null : printingData.totalCustomers,
     },
     {
-      label: 'Work Status',
-      href: '/printing/work-status',
-      icon: Settings,
-      count: 12,
-    },
-    {
-      label: 'Stock',
-      href: '/printing/stock',
-      icon: Package,
-      count: 8,
+      label: 'Job Types',
+      href: '/printing/job-types',
+      icon: FileText,
+      count: loading ? null : printingData.totalJobTypes,
     },
     {
       label: 'Reports',
       href: '/printing/reports',
       icon: BarChart3,
-      count: 15,
+      count: null,
     },
     {
       label: 'Settings',
@@ -570,8 +612,15 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
   ]
 
   // Select navigation items based on active section
-  // Use mainNavItems for main navigation
   let navItems: NavItem[] = mainNavItems
+
+  if (activeSection === 'garments' || activeSection === 'dashboard') {
+    navItems = garmentsNavItems
+  } else if (activeSection === 'printing') {
+    navItems = printingNavItems
+  } else if (activeSection === 'online') {
+    navItems = onlineNavItems
+  }
 
   const isActive = (href: string) => {
     if (href === '/') {
@@ -584,6 +633,20 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
     <>
       {/* Sidebar - Always Visible */}
       <aside className="fixed left-0 top-24 h-[calc(100vh-6rem)] w-64 bg-blue-500 flex flex-col overflow-hidden">
+        {/* Section Header */}
+        <div className="px-4 py-3 bg-blue-600 border-b border-blue-400">
+          <h2 className="text-lg font-bold text-white">
+            {activeSection === 'printing' ? '🖨️ PRINTING HUB' : 
+             activeSection === 'online' ? '🌐 ONLINE SERVICES' : 
+             '👕 KHERWAL BAZAAR'}
+          </h2>
+          <p className="text-xs text-blue-100 mt-1">
+            {activeSection === 'printing' ? 'Professional Printing Solutions' : 
+             activeSection === 'online' ? 'Digital Services Portal' : 
+             'Redefining your Style'}
+          </p>
+        </div>
+
         {/* Navigation Links */}
         <nav className="flex-1 px-3 space-y-0 overflow-y-auto pt-2">
           {navItems.map((item) => {

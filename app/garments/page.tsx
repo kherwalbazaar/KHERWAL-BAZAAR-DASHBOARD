@@ -58,7 +58,7 @@ export default function GarmentsPage() {
         totalInventory,
         totalSales: Math.floor(actualSalesAmount), // Use actual sales amount
         totalRevenue,
-        totalProducts: productsResult.success ? productsResult.products.length : 5
+        totalProducts: productsResult.success && productsResult.products ? productsResult.products.length : 5
       })
       
       console.log('Garments metrics loaded from Firebase:', { totalInventory, actualSalesAmount, totalRevenue })

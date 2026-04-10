@@ -233,4 +233,197 @@ export const getCustomers = async () => {
   }
 };
 
+// ========================================
+// PRINTING SECTION FIREBASE FUNCTIONS
+// ========================================
+
+// Printing Orders
+export const addPrintingOrder = async (orderData: any) => {
+  try {
+    console.log('[Firebase] Adding printing order:', orderData);
+    const docRef = await addDoc(collection(db, 'printing-orders'), {
+      ...orderData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+    console.log('[Firebase] ✅ Printing order added successfully with ID:', docRef.id);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('[Firebase] ❌ Error adding printing order:', error);
+    return { success: false, error };
+  }
+};
+
+export const getPrintingOrders = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'printing-orders'));
+    const orders: any[] = [];
+    querySnapshot.forEach((doc) => {
+      orders.push({ id: doc.id, ...doc.data() });
+    });
+    // Sort by createdAt descending
+    orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return { success: true, orders };
+  } catch (error) {
+    console.error('Error getting printing orders:', error);
+    return { success: false, error };
+  }
+};
+
+export const getPrintingOrder = async (orderId: string) => {
+  try {
+    const { getDoc } = await import('firebase/firestore');
+    const orderRef = doc(db, 'printing-orders', orderId);
+    const orderSnap = await getDoc(orderRef);
+    
+    if (orderSnap.exists()) {
+      return { success: true, order: { id: orderSnap.id, ...orderSnap.data() } };
+    } else {
+      return { success: false, error: 'Order not found' };
+    }
+  } catch (error) {
+    console.error('Error getting printing order:', error);
+    return { success: false, error };
+  }
+};
+
+export const updatePrintingOrder = async (orderId: string, orderData: any) => {
+  try {
+    console.log(`[Firebase] Updating printing order ${orderId}:`, orderData);
+    const orderRef = doc(db, 'printing-orders', orderId);
+    await updateDoc(orderRef, {
+      ...orderData,
+      updatedAt: new Date().toISOString()
+    });
+    console.log(`[Firebase] ✅ Printing order updated successfully: ${orderId}`);
+    return { success: true, id: orderId };
+  } catch (error) {
+    console.error(`[Firebase] ❌ Error updating printing order ${orderId}:`, error);
+    return { success: false, error };
+  }
+};
+
+export const deletePrintingOrder = async (orderId: string) => {
+  try {
+    const orderRef = doc(db, 'printing-orders', orderId);
+    await deleteDoc(orderRef);
+    console.log('Printing order deleted with ID:', orderId);
+    return { success: true, id: orderId };
+  } catch (error) {
+    console.error('Error deleting printing order:', error);
+    return { success: false, error };
+  }
+};
+
+// Printing Customers
+export const addPrintingCustomer = async (customerData: any) => {
+  try {
+    console.log('[Firebase] Adding printing customer:', customerData);
+    const docRef = await addDoc(collection(db, 'printing-customers'), {
+      ...customerData,
+      createdAt: new Date().toISOString(),
+      totalOrders: 0,
+      totalSpent: 0
+    });
+    console.log('[Firebase] ✅ Printing customer added successfully with ID:', docRef.id);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('[Firebase] ❌ Error adding printing customer:', error);
+    return { success: false, error };
+  }
+};
+
+export const getPrintingCustomers = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'printing-customers'));
+    const customers: any[] = [];
+    querySnapshot.forEach((doc) => {
+      customers.push({ id: doc.id, ...doc.data() });
+    });
+    // Sort by name
+    customers.sort((a, b) => a.name.localeCompare(b.name));
+    return { success: true, customers };
+  } catch (error) {
+    console.error('Error getting printing customers:', error);
+    return { success: false, error };
+  }
+};
+
+export const updatePrintingCustomer = async (customerId: string, customerData: any) => {
+  try {
+    const customerRef = doc(db, 'printing-customers', customerId);
+    await updateDoc(customerRef, customerData);
+    console.log('Printing customer updated with ID:', customerId);
+    return { success: true, id: customerId };
+  } catch (error) {
+    console.error('Error updating printing customer:', error);
+    return { success: false, error };
+  }
+};
+
+export const deletePrintingCustomer = async (customerId: string) => {
+  try {
+    const customerRef = doc(db, 'printing-customers', customerId);
+    await deleteDoc(customerRef);
+    console.log('Printing customer deleted with ID:', customerId);
+    return { success: true, id: customerId };
+  } catch (error) {
+    console.error('Error deleting printing customer:', error);
+    return { success: false, error };
+  }
+};
+
+// Job Types
+export const addJobType = async (jobTypeData: any) => {
+  try {
+    const docRef = await addDoc(collection(db, 'job-types'), {
+      ...jobTypeData,
+      createdAt: new Date().toISOString()
+    });
+    console.log('Job type added with ID:', docRef.id);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('Error adding job type:', error);
+    return { success: false, error };
+  }
+};
+
+export const getJobTypes = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'job-types'));
+    const jobTypes: any[] = [];
+    querySnapshot.forEach((doc) => {
+      jobTypes.push({ id: doc.id, ...doc.data() });
+    });
+    return { success: true, jobTypes };
+  } catch (error) {
+    console.error('Error getting job types:', error);
+    return { success: false, error };
+  }
+};
+
+export const updateJobType = async (jobTypeId: string, jobTypeData: any) => {
+  try {
+    const jobTypeRef = doc(db, 'job-types', jobTypeId);
+    await updateDoc(jobTypeRef, jobTypeData);
+    console.log('Job type updated with ID:', jobTypeId);
+    return { success: true, id: jobTypeId };
+  } catch (error) {
+    console.error('Error updating job type:', error);
+    return { success: false, error };
+  }
+};
+
+export const deleteJobType = async (jobTypeId: string) => {
+  try {
+    const jobTypeRef = doc(db, 'job-types', jobTypeId);
+    await deleteDoc(jobTypeRef);
+    console.log('Job type deleted with ID:', jobTypeId);
+    return { success: true, id: jobTypeId };
+  } catch (error) {
+    console.error('Error deleting job type:', error);
+    return { success: false, error };
+  }
+};
+
 export { app, analytics, db };

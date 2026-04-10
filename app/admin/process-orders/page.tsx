@@ -83,9 +83,10 @@ export default function ProcessOrdersPage() {
       let totalQuantityOrdered = 0
       const ordersData: OrderData[] = []
 
-      salesSnapshot.forEach((doc, index) => {
+      let orderNum = 0
+      salesSnapshot.forEach((doc: any) => {
+        orderNum++
         const sale = doc.data()
-        const orderNum = index + 1
 
         ordersData.push({
           orderNum,

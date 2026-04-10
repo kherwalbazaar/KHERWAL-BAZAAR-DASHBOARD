@@ -51,6 +51,7 @@ const statusLabel = {
 
 export default function PrintingPage() {
   const [searchTerm, setSearchTerm] = useState('')
+  const [activeSection, setActiveSection] = useState('printing')
 
   const filteredOrders = orders.filter((o) =>
     o.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,9 +68,12 @@ export default function PrintingPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header />
+      <Header 
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+      />
       <div className="flex flex-1">
-        <SidebarNav />
+        <SidebarNav activeSection={activeSection} />
         <main className="flex-1 ml-64 bg-background">
         <div className="p-6 md:p-8 max-w-7xl mx-auto">
           {/* Header */}

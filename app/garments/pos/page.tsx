@@ -268,7 +268,7 @@ export default function POSPage() {
       
       // First, update stock for each cart item
       
-      async function handleCheckout(cartItems) {
+      async function handleCheckout(cartItems: any[]) {
         try {
           for (const item of cartItems) {
             const productRef = doc(db, "products", item.id);

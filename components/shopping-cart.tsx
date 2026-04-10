@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useCart } from '@/hooks/use-cart'
 import { CartItem } from '@/lib/cart-manager'
-import { AlertCircle, Trash2, ShoppingCart, X } from 'lucide-react'
+import { AlertCircle, Trash2, ShoppingCart as ShoppingCartIcon, X } from 'lucide-react'
 
 interface ShoppingCartProps {
   isOpen: boolean
@@ -62,7 +62,7 @@ export function ShoppingCart({ isOpen, onClose, onCheckoutSuccess }: ShoppingCar
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5" />
+            <ShoppingCartIcon className="h-5 w-5" />
             Shopping Cart ({cart.totalItems} items)
           </DialogTitle>
         </DialogHeader>
@@ -70,7 +70,7 @@ export function ShoppingCart({ isOpen, onClose, onCheckoutSuccess }: ShoppingCar
         <div className="max-h-96 overflow-y-auto">
           {cart.cart.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <ShoppingCart className="h-12 w-12 text-muted-foreground mb-4" />
+              <ShoppingCartIcon className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground">Your cart is empty</p>
             </div>
           ) : (

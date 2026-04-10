@@ -38,7 +38,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import CustomOrderForm from './custom-order'
 
 interface OrderItem {
   productId: string
@@ -75,8 +74,6 @@ export default function OrdersPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'orders' | 'printing'>('orders')
-  const [customOrderOpen, setCustomOrderOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [filters, setFilters] = useState<Filters>({
     search: '',
     paymentMethod: 'all',
@@ -87,11 +84,6 @@ export default function OrdersPage() {
   useEffect(() => {
     fetchOrders()
   }, [])
-
-  // Debug tab changes
-  useEffect(() => {
-    console.log('activeTab changed to:', activeTab)
-  }, [activeTab])
 
   const fetchOrders = async () => {
     try {
@@ -244,7 +236,7 @@ export default function OrdersPage() {
 
   const handleShareOrder = (order: Order) => {
     const orderDetails = `
-ORDER DETAILS
+🧾 ORDER DETAILS
 ================
 Invoice: ${order.invoiceNumber}
 Customer: ${order.customerName}
@@ -252,9 +244,9 @@ Phone: ${order.customerPhone || 'N/A'}
 Date: ${new Date(order.createdAt).toLocaleDateString()}
 
 Items:
-${order.items.map((item, idx) => `${idx + 1}. ${item.productName} - ${item.quantity} × ${item.price} = ${item.quantity * item.price}`).join('\n')}
+${order.items.map((item, idx) => `${idx + 1}. ${item.productName} - ${item.quantity} × ₹${item.price} = ₹${item.quantity * item.price}`).join('\n')}
 
-Total Amount: ${order.paidAmount}
+Total Amount: ₹${order.paidAmount}
 Payment: ${order.paymentMethod.toUpperCase()}
 Status: ${order.status || 'completed'}
     `.trim()
@@ -334,11 +326,7 @@ Status: ${order.status || 'completed'}
           <Button
             variant={activeTab === 'printing' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => {
-              console.log('Printing tab clicked, current activeTab:', activeTab);
-              setActiveTab('printing');
-              console.log('After setActiveTab called');
-            }}
+            onClick={() => setActiveTab('printing')}
             className={activeTab === 'printing' ? 'bg-white text-blue-600' : 'bg-white/20 text-white border-white/30 hover:bg-white/30'}
           >
             <span className="text-lg">Printing</span>
@@ -357,336 +345,336 @@ Status: ${order.status || 'completed'}
         <>
           {/* Dashboard Summary Cards (4 Cards) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-6">
-            {/* Total Sales */}
-            <Card className="p-6 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-              <div>
-                <h3 className="font-semibold text-green-800 mb-2">Total Sales</h3>
-                <p className="text-2xl font-bold text-green-700">¥{stats.totalSales.toLocaleString()}</p>
-              </div>
-            </Card>
-
-            {/* Total Orders */}
-            <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-              <div>
-                <h3 className="font-semibold text-blue-800 mb-2">Total Orders</h3>
-                <p className="text-2xl font-bold text-blue-700">{stats.totalOrders} Orders</p>
-              </div>
-            </Card>
-
-            {/* Today Sales */}
-            <Card className="p-6 bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-              <div>
-                <h3 className="font-semibold text-yellow-800 mb-2">Today Sales</h3>
-                <p className="text-2xl font-bold text-yellow-700">¥{stats.todaySales.toLocaleString()}</p>
-              </div>
-            </Card>
-
-            {/* Total Profit */}
-            <Card className="p-6 bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-              <div>
-                <h3 className="font-semibold text-red-800 mb-2">Total Profit</h3>
-                <p className="text-2xl font-bold text-red-700">¥{stats.totalProfit.toLocaleString()}</p>
-              </div>
-            </Card>
+        {/* 🟢 Total Sales */}
+        <Card className="p-6 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <div>
+            <h3 className="font-semibold text-green-800 mb-2">Total Sales</h3>
+            <p className="text-2xl font-bold text-green-700">₹{stats.totalSales.toLocaleString()}</p>
           </div>
+        </Card>
 
-          {/* Orders Table */}
-          <Card className="overflow-hidden pt-0">
-            {/* Mini Header */}
-            <div className="bg-gray-50 px-6 py-2 border-b">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                    <span>Payment Method:</span>
-                    <Button
-                      variant={filters.paymentMethod === 'all' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => handleFilterChange('paymentMethod', 'all')}
-                      className="h-8"
-                    >
-                      All
-                    </Button>
-                    <Button
-                      variant={filters.paymentMethod === 'cash' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => handleFilterChange('paymentMethod', 'cash')}
-                      className="h-8"
-                    >
-                      Cash
-                    </Button>
-                    <Button
-                      variant={filters.paymentMethod === 'upi' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => handleFilterChange('paymentMethod', 'upi')}
-                      className="h-8"
-                    >
-                      Online
-                    </Button>
-                    <Button
-                      variant={filters.paymentMethod === 'card' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => handleFilterChange('paymentMethod', 'card')}
-                      className="h-8"
-                    >
-                      Card
-                    </Button>
-                  </h3>
-                  <span className="text-sm text-gray-500">({filteredOrders.length} orders)</span>
+        {/* 🔵 Total Orders */}
+        <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <div>
+            <h3 className="font-semibold text-blue-800 mb-2">Total Orders</h3>
+            <p className="text-2xl font-bold text-blue-700">{stats.totalOrders} Orders</p>
+          </div>
+        </Card>
+
+        {/* 🟡 Today Sales */}
+        <Card className="p-6 bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+          <div>
+            <h3 className="font-semibold text-yellow-800 mb-2">Today Sales</h3>
+            <p className="text-2xl font-bold text-yellow-700">₹{stats.todaySales.toLocaleString()}</p>
+          </div>
+        </Card>
+
+        {/* 🔴 Total Profit */}
+        <Card className="p-6 bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+          <div>
+            <h3 className="font-semibold text-red-800 mb-2">Total Profit</h3>
+            <p className="text-2xl font-bold text-red-700">₹{stats.totalProfit.toLocaleString()}</p>
+          </div>
+        </Card>
+      </div>
+
+      {/* Orders Table */}
+      <Card className="overflow-hidden pt-0">
+        {/* Mini Header */}
+        <div className="bg-gray-50 px-6 py-2 border-b">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <span>Payment Method:</span>
+                <Button
+                  variant={filters.paymentMethod === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleFilterChange('paymentMethod', 'all')}
+                  className="h-8"
+                >
+                  All
+                </Button>
+                <Button
+                  variant={filters.paymentMethod === 'cash' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleFilterChange('paymentMethod', 'cash')}
+                  className="h-8"
+                >
+                  Cash
+                </Button>
+                <Button
+                  variant={filters.paymentMethod === 'upi' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleFilterChange('paymentMethod', 'upi')}
+                  className="h-8"
+                >
+                  Online
+                </Button>
+                <Button
+                  variant={filters.paymentMethod === 'card' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleFilterChange('paymentMethod', 'card')}
+                  className="h-8"
+                >
+                  Card
+                </Button>
+              </h3>
+              <span className="text-sm text-gray-500">({filteredOrders.length} orders)</span>
+            </div>
+            {/* Search Section */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search orders..."
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                className="pl-10 w-64"
+              />
+            </div>
+          </div>
+        </div>
+        {filteredOrders.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-gray-500">No orders found matching your filters</p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="font-semibold text-center">Invoice #</TableHead>
+                    <TableHead className="font-semibold text-center">Customer</TableHead>
+                    <TableHead className="font-semibold text-center">Phone</TableHead>
+                    <TableHead className="font-semibold text-center">Date & Time</TableHead>
+                    <TableHead className="font-semibold text-center">Amount</TableHead>
+                    <TableHead className="font-semibold text-center">Payment</TableHead>
+                    <TableHead className="font-semibold text-center">Status</TableHead>
+                    <TableHead className="font-semibold text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedOrders.map((order) => (
+                    <TableRow key={order.id} className="hover:bg-gray-50">
+                      <TableCell className="font-bold text-blue-600 text-center">{order.invoiceNumber}</TableCell>
+                      <TableCell className="font-medium text-center">{order.customerName}</TableCell>
+                      <TableCell className="text-center">{order.customerPhone || '-'}</TableCell>
+                      <TableCell className="text-sm text-center">
+                        <div>{new Date(order.createdAt).toLocaleDateString()}</div>
+                        <div className="text-gray-500">{new Date(order.createdAt).toLocaleTimeString()}</div>
+                      </TableCell>
+                      <TableCell className="font-bold text-green-600 text-center">₹{order.paidAmount}</TableCell>
+                      <TableCell className="text-center">
+                        <Badge
+                          variant="outline"
+                          className={
+                            order.paymentMethod === 'cash'
+                              ? 'bg-green-50 text-green-700 border-green-200'
+                              : order.paymentMethod === 'upi'
+                                ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                : order.paymentMethod === 'card'
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                  : 'bg-orange-50 text-orange-700 border-orange-200'
+                          }
+                        >
+                          {order.paymentMethod.toUpperCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge
+                          className={
+                            order.status === 'completed'
+                              ? 'bg-green-100 text-green-800'
+                              : order.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                          }
+                        >
+                          {order.status || 'completed'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {/* View Details */}
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View
+                                </DropdownMenuItem>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Order Details - {order.invoiceNumber}</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  {/* Customer Info */}
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <p className="text-sm text-gray-600">Customer Name</p>
+                                      <p className="font-semibold">{order.customerName}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm text-gray-600">Phone</p>
+                                      <p className="font-semibold">{order.customerPhone || '-'}</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Items */}
+                                  <div>
+                                    <p className="font-semibold mb-2">📦 Items</p>
+                                    <div className="space-y-2">
+                                      {order.items.map((item, idx) => (
+                                        <div key={idx} className="flex justify-between bg-gray-50 p-2 rounded">
+                                          <span>{item.productName}</span>
+                                          <span>{item.quantity} × ₹{item.price} = ₹{item.quantity * item.price}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Summary */}
+                                  <div className="bg-blue-50 p-4 rounded">
+                                    <div className="flex justify-between mb-2">
+                                      <span>Subtotal:</span>
+                                      <span>₹{order.items.reduce((sum, item) => sum + item.quantity * item.price, 0)}</span>
+                                    </div>
+                                    <div className="border-t pt-2">
+                                      <div className="flex justify-between font-bold text-lg">
+                                        <span>Total:</span>
+                                        <span className="text-green-600">₹{order.paidAmount}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Payment Info */}
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <p className="text-gray-600">Payment Method</p>
+                                      <p className="font-semibold">{order.paymentMethod.toUpperCase()}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-gray-600">Date & Time</p>
+                                      <p className="font-semibold">{new Date(order.createdAt).toLocaleString()}</p>
+                                    </div>
+                                  </div>
+
+                                  {order.notes && (
+                                    <div>
+                                      <p className="text-sm text-gray-600">Notes</p>
+                                      <p className="text-sm">{order.notes}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+
+                            {/* Print */}
+                            <DropdownMenuItem onClick={() => window.print()}>
+                              <Printer className="h-4 w-4 mr-2" />
+                              Print
+                            </DropdownMenuItem>
+
+                            {/* Share */}
+                            <DropdownMenuItem onClick={() => handleShareOrder(order)}>
+                              <Share className="h-4 w-4 mr-2" />
+                              Share
+                            </DropdownMenuItem>
+
+                            {/* Delete */}
+                            {deleteConfirm === order.id ? (
+                              <>
+                                <DropdownMenuItem onClick={() => deleteOrder(order.id)} className="text-red-600">
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Confirm Delete
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setDeleteConfirm(null)}>
+                                  <X className="h-4 w-4 mr-2" />
+                                  Cancel
+                                </DropdownMenuItem>
+                              </>
+                            ) : (
+                              <DropdownMenuItem onClick={() => setDeleteConfirm(order.id)} className="text-red-600">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Pagination */}
+            <div className="border-t p-4 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredOrders.length)} of{' '}
+                {filteredOrders.length} orders
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">Per page:</label>
+                  <Select value={itemsPerPage.toString()} onValueChange={(value) => {
+                    setItemsPerPage(parseInt(value))
+                    setCurrentPage(1)
+                  }}>
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                {/* Search Section */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder="Search orders..."
-                    value={filters.search}
-                    onChange={(e) => handleFilterChange('search', e.target.value)}
-                    className="pl-10 w-64"
-                  />
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    variant="outline"
+                  >
+                    Previous
+                  </Button>
+                  <div className="flex items-center gap-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <Button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        variant={currentPage === page ? 'default' : 'outline'}
+                        size="sm"
+                        className="w-10"
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                  </div>
+                  <Button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    variant="outline"
+                  >
+                    Next
+                  </Button>
                 </div>
               </div>
             </div>
-            {filteredOrders.length === 0 ? (
-              <div className="p-8 text-center">
-                <p className="text-gray-500">No orders found matching your filters</p>
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-gray-50">
-                        <TableHead className="font-semibold text-center">Invoice #</TableHead>
-                        <TableHead className="font-semibold text-center">Customer</TableHead>
-                        <TableHead className="font-semibold text-center">Phone</TableHead>
-                        <TableHead className="font-semibold text-center">Date & Time</TableHead>
-                        <TableHead className="font-semibold text-center">Amount</TableHead>
-                        <TableHead className="font-semibold text-center">Payment</TableHead>
-                        <TableHead className="font-semibold text-center">Status</TableHead>
-                        <TableHead className="font-semibold text-center">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedOrders.map((order) => (
-                        <TableRow key={order.id} className="hover:bg-gray-50">
-                          <TableCell className="font-bold text-blue-600 text-center">{order.invoiceNumber}</TableCell>
-                          <TableCell className="font-medium text-center">{order.customerName}</TableCell>
-                          <TableCell className="text-center">{order.customerPhone || '-'}</TableCell>
-                          <TableCell className="text-sm text-center">
-                            <div>{new Date(order.createdAt).toLocaleDateString()}</div>
-                            <div className="text-gray-500">{new Date(order.createdAt).toLocaleTimeString()}</div>
-                          </TableCell>
-                          <TableCell className="font-bold text-green-600 text-center">¥{order.paidAmount}</TableCell>
-                          <TableCell className="text-center">
-                            <Badge
-                              variant="outline"
-                              className={
-                                order.paymentMethod === 'cash'
-                                  ? 'bg-green-50 text-green-700 border-green-200'
-                                  : order.paymentMethod === 'upi'
-                                    ? 'bg-purple-50 text-purple-700 border-purple-200'
-                                    : order.paymentMethod === 'card'
-                                      ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                      : 'bg-orange-50 text-orange-700 border-orange-200'
-                              }
-                            >
-                              {order.paymentMethod.toUpperCase()}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge
-                              className={
-                                order.status === 'completed'
-                                  ? 'bg-green-100 text-green-800'
-                                  : order.status === 'pending'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-red-100 text-red-800'
-                              }
-                            >
-                              {order.status || 'completed'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                {/* View Details */}
-                                <Dialog>
-                                  <DialogTrigger asChild>
-                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                      <Eye className="h-4 w-4 mr-2" />
-                                      View
-                                    </DropdownMenuItem>
-                                  </DialogTrigger>
-                                  <DialogContent className="max-w-2xl">
-                                    <DialogHeader>
-                                      <DialogTitle>Order Details - {order.invoiceNumber}</DialogTitle>
-                                    </DialogHeader>
-                                    <div className="space-y-4">
-                                      {/* Customer Info */}
-                                      <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                          <p className="text-sm text-gray-600">Customer Name</p>
-                                          <p className="font-semibold">{order.customerName}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-sm text-gray-600">Phone</p>
-                                          <p className="font-semibold">{order.customerPhone || '-'}</p>
-                                        </div>
-                                      </div>
-
-                                      {/* Items */}
-                                      <div>
-                                        <p className="font-semibold mb-2">Items</p>
-                                        <div className="space-y-2">
-                                          {order.items.map((item, idx) => (
-                                            <div key={idx} className="flex justify-between bg-gray-50 p-2 rounded">
-                                              <span>{item.productName}</span>
-                                              <span>{item.quantity} × ¥{item.price} = ¥{item.quantity * item.price}</span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-
-                                      {/* Summary */}
-                                      <div className="bg-blue-50 p-4 rounded">
-                                        <div className="flex justify-between mb-2">
-                                          <span>Subtotal:</span>
-                                          <span>¥{order.items.reduce((sum, item) => sum + item.quantity * item.price, 0)}</span>
-                                        </div>
-                                        <div className="border-t pt-2">
-                                          <div className="flex justify-between font-bold text-lg">
-                                            <span>Total:</span>
-                                            <span className="text-green-600">¥{order.paidAmount}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      {/* Payment Info */}
-                                      <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                          <p className="text-gray-600">Payment Method</p>
-                                          <p className="font-semibold">{order.paymentMethod.toUpperCase()}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-gray-600">Date & Time</p>
-                                          <p className="font-semibold">{new Date(order.createdAt).toLocaleString()}</p>
-                                        </div>
-                                      </div>
-
-                                      {order.notes && (
-                                        <div>
-                                          <p className="text-sm text-gray-600">Notes</p>
-                                          <p className="text-sm">{order.notes}</p>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </DialogContent>
-                                </Dialog>
-
-                                {/* Print */}
-                                <DropdownMenuItem onClick={() => window.print()}>
-                                  <Printer className="h-4 w-4 mr-2" />
-                                  Print
-                                </DropdownMenuItem>
-
-                                {/* Share */}
-                                <DropdownMenuItem onClick={() => handleShareOrder(order)}>
-                                  <Share className="h-4 w-4 mr-2" />
-                                  Share
-                                </DropdownMenuItem>
-
-                                {/* Delete */}
-                                {deleteConfirm === order.id ? (
-                                  <>
-                                    <DropdownMenuItem onClick={() => deleteOrder(order.id)} className="text-red-600">
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Confirm Delete
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setDeleteConfirm(null)}>
-                                      <X className="h-4 w-4 mr-2" />
-                                      Cancel
-                                    </DropdownMenuItem>
-                                  </>
-                                ) : (
-                                  <DropdownMenuItem onClick={() => setDeleteConfirm(order.id)} className="text-red-600">
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {/* Pagination */}
-                <div className="border-t p-4 flex items-center justify-between">
-                  <div className="text-sm text-gray-600">
-                    Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredOrders.length)} of{' '}
-                    {filteredOrders.length} orders
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm font-medium">Per page:</label>
-                      <Select value={itemsPerPage.toString()} onValueChange={(value) => {
-                        setItemsPerPage(parseInt(value))
-                        setCurrentPage(1)
-                      }}>
-                        <SelectTrigger className="w-20">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="5">5</SelectItem>
-                          <SelectItem value="10">10</SelectItem>
-                          <SelectItem value="20">20</SelectItem>
-                          <SelectItem value="50">50</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
-                        variant="outline"
-                      >
-                        Previous
-                      </Button>
-                      <div className="flex items-center gap-2">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                          <Button
-                            key={page}
-                            onClick={() => setCurrentPage(page)}
-                            variant={currentPage === page ? 'default' : 'outline'}
-                            size="sm"
-                            className="w-10"
-                          >
-                            {page}
-                          </Button>
-                        ))}
-                      </div>
-                      <Button
-                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                        disabled={currentPage === totalPages}
-                        variant="outline"
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </Card>
+          </>
+        )}
+      </Card>
         </>
       )}
 
@@ -849,14 +837,7 @@ Status: ${order.status || 'completed'}
                   </div>
                   <Button 
                     className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => {
-                      setSelectedProduct({
-                        name: 'Bill Book (A5)',
-                        type: 'Bill Book',
-                        basePrice: 120
-                      });
-                      setCustomOrderOpen(true);
-                    }}
+                    onClick={() => alert('Custom order form will open here for Bill Book')}
                   >
                     Customize
                   </Button>
@@ -897,14 +878,7 @@ Status: ${order.status || 'completed'}
                   </div>
                   <Button 
                     className="bg-green-600 hover:bg-green-700"
-                    onClick={() => {
-                      setSelectedProduct({
-                        name: 'Money Receipt',
-                        type: 'Money Receipt',
-                        basePrice: 150
-                      });
-                      setCustomOrderOpen(true);
-                    }}
+                    onClick={() => alert('Custom order form will open here for Money Receipt')}
                   >
                     Customize
                   </Button>
@@ -945,14 +919,7 @@ Status: ${order.status || 'completed'}
                   </div>
                   <Button 
                     className="bg-orange-600 hover:bg-orange-700"
-                    onClick={() => {
-                      setSelectedProduct({
-                        name: 'Visiting Card',
-                        type: 'Visiting Card',
-                        basePrice: 250
-                      });
-                      setCustomOrderOpen(true);
-                    }}
+                    onClick={() => alert('Custom order form will open here for Visiting Card')}
                   >
                     Customize
                   </Button>
@@ -981,14 +948,6 @@ Status: ${order.status || 'completed'}
           </div>
         </div>
       )}
-
-      {/* Custom Order Form Dialog */}
-      <CustomOrderForm
-        isOpen={customOrderOpen}
-        onClose={() => setCustomOrderOpen(false)}
-        productType={selectedProduct?.name || ''}
-        basePrice={selectedProduct?.basePrice || 0}
-      />
     </div>
   )
 }
