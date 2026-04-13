@@ -7,6 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dashboard } from '@/components/dashboard'
 import { TrendingUp, ShoppingCart, Users, DollarSign, Package, Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import CustomOrderForm from './orders/custom-order'
 
 export default function Home() {
@@ -20,6 +28,18 @@ export default function Home() {
     totalStock: 0,
     totalProductCost: 0
   })
+
+  const [printingMetrics, setPrintingMetrics] = useState({
+    totalPrintingSales: 0,
+    totalPrintingOrders: 0,
+    activePrintingCustomers: 0,
+    printingGrowthRate: 0,
+    totalPrintingProducts: 0,
+    totalPrintingStock: 0,
+    totalPrintingCost: 0,
+    pendingJobs: 0,
+    completedJobs: 0
+  })
   const [isClient, setIsClient] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -29,6 +49,12 @@ export default function Home() {
   const [changeDetectedTime, setChangeDetectedTime] = useState<number | null>(null)
   const [customOrderOpen, setCustomOrderOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  
+  // Customer state for printing orders
+  const [customers, setCustomers] = useState<any[]>([])
+  const [selectedCustomer, setSelectedCustomer] = useState<string>('')
+  const [customerName, setCustomerName] = useState<string>('')
+  const [customerPhone, setCustomerPhone] = useState<string>('')
 
   // Load real data from Firebase on component mount
   useEffect(() => {
@@ -36,6 +62,8 @@ export default function Home() {
     setDataStatus('yellow') // Set to yellow during initial load
     setIsSyncing(true)
     loadDashboardData()
+    loadCustomers()
+    loadPrintingMetrics()
   }, [])
 
   // Set up change detection listener - checks for data changes every 3 seconds when not syncing
@@ -207,6 +235,58 @@ export default function Home() {
     }
   }
 
+  const loadCustomers = async () => {
+    try {
+      // For now, create a mock customers list. In a real implementation, 
+      // this would fetch from Firebase customers collection
+      const mockCustomers = [
+        { id: '1', name: 'John Doe', phone: '9876543210' },
+        { id: '2', name: 'Jane Smith', phone: '9876543211' },
+        { id: '3', name: 'Bob Johnson', phone: '9876543212' },
+        { id: '4', name: 'Alice Brown', phone: '9876543213' },
+        { id: '5', name: 'Charlie Wilson', phone: '9876543214' },
+      ]
+      setCustomers(mockCustomers)
+      console.log('Customers loaded:', mockCustomers)
+    } catch (error) {
+      console.error('Error loading customers:', error)
+      setCustomers([])
+    }
+  }
+
+  const loadPrintingMetrics = async () => {
+    try {
+      // Mock printing metrics - in real implementation, fetch from Firebase
+      const mockPrintingMetrics = {
+        totalPrintingSales: 45000,
+        totalPrintingOrders: 125,
+        activePrintingCustomers: 45,
+        printingGrowthRate: 12.5,
+        totalPrintingProducts: 8,
+        totalPrintingStock: 2500,
+        totalPrintingCost: 18000,
+        pendingJobs: 8,
+        completedJobs: 117
+      }
+      setPrintingMetrics(mockPrintingMetrics)
+      console.log('Printing metrics loaded:', mockPrintingMetrics)
+    } catch (error) {
+      console.error('Error loading printing metrics:', error)
+    }
+  }
+
+  const handleCustomerChange = (customerId: string) => {
+    setSelectedCustomer(customerId)
+    const customer = customers.find(c => c.id === customerId)
+    if (customer) {
+      setCustomerName(customer.name)
+      setCustomerPhone(customer.phone)
+    } else {
+      setCustomerName('')
+      setCustomerPhone('')
+    }
+  }
+
   const handleRefresh = async () => {
     setIsRefreshing(true)
     setIsSyncing(true)
@@ -230,9 +310,11 @@ export default function Home() {
         <div className="p-8 w-full mt-20">
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <Card className="bg-blue-500 text-white">
+            <Card className={activeSection === 'printing' ? "bg-purple-500 text-white" : "bg-blue-500 text-white"}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white">Total sales</CardTitle>
+                <CardTitle className="text-sm font-medium text-white">
+                  {activeSection === 'printing' ? 'Printing Sales' : 'Total Sales'}
+                </CardTitle>
                 <DollarSign className="h-4 w-4 text-blue-100" />
               </CardHeader>
               <CardContent>
@@ -242,16 +324,20 @@ export default function Home() {
                       <Loader2 className="h-6 w-6 animate-spin" />
                     </div>
                   ) : (
-                    isClient ? `₹${metrics.totalSale.toLocaleString()}` : '₹0'
+                    isClient ? `₹${(activeSection === 'printing' ? printingMetrics.totalPrintingSales : metrics.totalSale).toLocaleString()}` : '₹0'
                   )}
                 </div>
-                <p className="text-xs text-blue-100">Total paid amount</p>
+                <p className="text-xs text-blue-100">
+                  {activeSection === 'printing' ? 'Total printing revenue' : 'Total paid amount'}
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-indigo-500 text-white">
+            <Card className={activeSection === 'printing' ? "bg-indigo-600 text-white" : "bg-indigo-500 text-white"}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white">Total Orders</CardTitle>
+                <CardTitle className="text-sm font-medium text-white">
+                  {activeSection === 'printing' ? 'Printing Orders' : 'Total Orders'}
+                </CardTitle>
                 <ShoppingCart className="h-4 w-4 text-indigo-100" />
               </CardHeader>
               <CardContent>
@@ -261,17 +347,25 @@ export default function Home() {
                       <Loader2 className="h-6 w-6 animate-spin" />
                     </div>
                   ) : (
-                    isClient ? metrics.totalOrders.toLocaleString() : '0'
+                    isClient ? (activeSection === 'printing' ? printingMetrics.totalPrintingOrders : metrics.totalOrders).toLocaleString() : '0'
                   )}
                 </div>
-                <p className="text-xs text-indigo-100">Total completed orders</p>
+                <p className="text-xs text-indigo-100">
+                  {activeSection === 'printing' ? 'Total printing jobs' : 'Total completed orders'}
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-purple-500 text-white">
+            <Card className={activeSection === 'printing' ? "bg-pink-500 text-white" : "bg-purple-500 text-white"}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white">Growth Rate</CardTitle>
-                <TrendingUp className="h-4 w-4 text-purple-100" />
+                <CardTitle className="text-sm font-medium text-white">
+                  {activeSection === 'printing' ? 'Pending Jobs' : 'Growth Rate'}
+                </CardTitle>
+                {activeSection === 'printing' ? (
+                  <Package className="h-4 w-4 text-pink-100" />
+                ) : (
+                  <TrendingUp className="h-4 w-4 text-purple-100" />
+                )}
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
@@ -280,16 +374,26 @@ export default function Home() {
                       <Loader2 className="h-6 w-6 animate-spin" />
                     </div>
                   ) : (
-                    isClient ? `${metrics.growthRate.toFixed(1)}%` : '0%'
+                    isClient ? (
+                      activeSection === 'printing' ? 
+                        printingMetrics.pendingJobs : 
+                        `${metrics.growthRate.toFixed(1)}%`
+                    ) : (
+                      activeSection === 'printing' ? '0' : '0%'
+                    )
                   )}
                 </div>
-                <p className="text-xs text-purple-100">Year-over-year</p>
+                <p className="text-xs text-purple-100">
+                  {activeSection === 'printing' ? 'Jobs in progress' : 'Year-over-year'}
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-purple-500 text-white">
+            <Card className={activeSection === 'printing' ? "bg-green-600 text-white" : "bg-purple-500 text-white"}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white">Total Products</CardTitle>
+                <CardTitle className="text-sm font-medium text-white">
+                  {activeSection === 'printing' ? 'Completed Jobs' : 'Total Products'}
+                </CardTitle>
                 <Package className="h-4 w-4 text-purple-100" />
               </CardHeader>
               <CardContent>
@@ -299,16 +403,20 @@ export default function Home() {
                       <Loader2 className="h-6 w-6 animate-spin" />
                     </div>
                   ) : (
-                    isClient ? metrics.totalProducts.toLocaleString() : '0'
+                    isClient ? (activeSection === 'printing' ? printingMetrics.completedJobs : metrics.totalProducts).toLocaleString() : '0'
                   )}
                 </div>
-                <p className="text-xs text-purple-100">Products in inventory</p>
+                <p className="text-xs text-purple-100">
+                  {activeSection === 'printing' ? 'Finished printing jobs' : 'Products in inventory'}
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-green-500 text-white">
+            <Card className={activeSection === 'printing' ? "bg-orange-600 text-white" : "bg-green-500 text-white"}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white">Total Stock</CardTitle>
+                <CardTitle className="text-sm font-medium text-white">
+                  {activeSection === 'printing' ? 'Printing Stock' : 'Total Stock'}
+                </CardTitle>
                 <Package className="h-4 w-4 text-green-100" />
               </CardHeader>
               <CardContent>
@@ -318,16 +426,20 @@ export default function Home() {
                       <Loader2 className="h-6 w-6 animate-spin" />
                     </div>
                   ) : (
-                    isClient ? metrics.totalStock.toLocaleString() : '0'
+                    isClient ? (activeSection === 'printing' ? printingMetrics.totalPrintingStock : metrics.totalStock).toLocaleString() : '0'
                   )}
                 </div>
-                <p className="text-xs text-green-100">Units available (auto-reduced on checkout)</p>
+                <p className="text-xs text-green-100">
+                  {activeSection === 'printing' ? 'Printing materials available' : 'Units available (auto-reduced on checkout)'}
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-orange-500 text-white">
+            <Card className={activeSection === 'printing' ? "bg-red-600 text-white" : "bg-orange-500 text-white"}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white">Total Invest</CardTitle>
+                <CardTitle className="text-sm font-medium text-white">
+                  {activeSection === 'printing' ? 'Material Cost' : 'Total Invest'}
+                </CardTitle>
                 <DollarSign className="h-4 w-4 text-orange-100" />
               </CardHeader>
               <CardContent>
@@ -337,301 +449,38 @@ export default function Home() {
                       <Loader2 className="h-6 w-6 animate-spin" />
                     </div>
                   ) : (
-                    isClient ? `₹${metrics.totalProductCost.toLocaleString()}` : '₹0'
+                    isClient ? `₹${(activeSection === 'printing' ? printingMetrics.totalPrintingCost : metrics.totalProductCost).toLocaleString()}` : '₹0'
                   )}
                 </div>
-                <p className="text-xs text-orange-100">Total inventory cost (updated with stock)</p>
+                <p className="text-xs text-orange-100">
+                  {activeSection === 'printing' ? 'Total material investment' : 'Total inventory cost (updated with stock)'}
+                </p>
               </CardContent>
             </Card>
           </div>
+
+            {/* KHERWAL BAZAAR Section */}
+            {activeSection === 'garments' && (
+              <div className="space-y-6">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2">KHERWAL BAZAAR</h2>
+                  <p className="text-gray-600">Premium garments and fashion collection</p>
+                </div>
+
+                              </div>
+            )}
 
             {/* Printing Section */}
             {activeSection === 'printing' && (
               <div className="space-y-6">
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Printing Services</h2>
-                  <p className="text-gray-600">Professional printing solutions for all your needs</p>
-                </div>
-
-                {/* Categories Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  {/* Bill Book Printing */}
-                  <Card className="p-4 border-2 border-blue-200 hover:shadow-lg transition-all cursor-pointer hover:border-blue-400">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Package className="h-8 w-8 text-blue-600" />
-                      </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">Bill Book Printing</h3>
-                      <p className="text-sm text-gray-600 mb-3">Professional bill books</p>
-                      <div className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Popular</div>
-                    </div>
-                  </Card>
-
-                  {/* Money Receipt */}
-                  <Card className="p-4 border-2 border-green-200 hover:shadow-lg transition-all cursor-pointer hover:border-green-400">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <DollarSign className="h-8 w-8 text-green-600" />
-                      </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">Money Receipt</h3>
-                      <p className="text-sm text-gray-600 mb-3">Custom receipt books</p>
-                      <div className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Available</div>
-                    </div>
-                  </Card>
-
-                  {/* Marriage Card */}
-                  <Card className="p-4 border-2 border-pink-200 hover:shadow-lg transition-all cursor-pointer hover:border-pink-400">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Users className="h-8 w-8 text-pink-600" />
-                      </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">Marriage Card</h3>
-                      <p className="text-sm text-gray-600 mb-3">Beautiful invitations</p>
-                      <div className="bg-pink-100 text-pink-800 text-xs px-2 py-1 rounded">Premium</div>
-                    </div>
-                  </Card>
-
-                  {/* Jatra Ticket */}
-                  <Card className="p-4 border-2 border-purple-200 hover:shadow-lg transition-all cursor-pointer hover:border-purple-400">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <ShoppingCart className="h-8 w-8 text-purple-600" />
-                      </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">Jatra Ticket</h3>
-                      <p className="text-sm text-gray-600 mb-3">Event tickets</p>
-                      <div className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">Custom</div>
-                    </div>
-                  </Card>
-
-                  {/* Visiting Card */}
-                  <Card className="p-4 border-2 border-orange-200 hover:shadow-lg transition-all cursor-pointer hover:border-orange-400">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Package className="h-8 w-8 text-orange-600" />
-                      </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">Visiting Card</h3>
-                      <p className="text-sm text-gray-600 mb-3">Professional cards</p>
-                      <div className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">Quick</div>
-                    </div>
-                  </Card>
-
-                  {/* Flex / Banner */}
-                  <Card className="p-4 border-2 border-red-200 hover:shadow-lg transition-all cursor-pointer hover:border-red-400">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <RefreshCw className="h-8 w-8 text-red-600" />
-                      </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">Flex / Banner</h3>
-                      <p className="text-sm text-gray-600 mb-3">Large format prints</p>
-                      <div className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">Large</div>
-                    </div>
-                  </Card>
-
-                  {/* T-Shirt Printing */}
-                  <Card className="p-4 border-2 border-indigo-200 hover:shadow-lg transition-all cursor-pointer hover:border-indigo-400">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Package className="h-8 w-8 text-indigo-600" />
-                      </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">T-Shirt Printing</h3>
-                      <p className="text-sm text-gray-600 mb-3">Custom apparel</p>
-                      <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded">Custom</div>
-                    </div>
-                  </Card>
-
-                  {/* Custom Design */}
-                  <Card className="p-4 border-2 border-gray-200 hover:shadow-lg transition-all cursor-pointer hover:border-gray-400">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Package className="h-8 w-8 text-gray-600" />
-                      </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">Custom Design</h3>
-                      <p className="text-sm text-gray-600 mb-3">Any design work</p>
-                      <div className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Special</div>
-                    </div>
-                  </Card>
-                </div>
-
-                {/* Product Cards Section */}
-                <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Popular Products</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Bill Book Product Card */}
-                    <Card className="p-4 border hover:shadow-lg transition-shadow">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="font-semibold text-gray-800">Bill Book (A5)</h4>
-                          <p className="text-sm text-gray-600">100 Pages</p>
-                        </div>
-                        <div className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">1 Color</div>
-                      </div>
-                      <div className="space-y-2 text-sm text-gray-600 mb-3">
-                        <div className="flex justify-between">
-                          <span>Size:</span>
-                          <span className="font-medium">A5</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Print:</span>
-                          <span className="font-medium">1 Color</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Paper:</span>
-                          <span className="font-medium">70 GSM</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Pages:</span>
-                          <span className="font-medium">100</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-2xl font-bold text-green-600">¥120</p>
-                          <p className="text-xs text-gray-500">per book</p>
-                        </div>
-                        <Button 
-                          className="bg-blue-600 hover:bg-blue-700"
-                          onClick={() => {
-                            window.location.href = '/orders';
-                            setActiveSection('printing');
-                            setSelectedProduct({
-                              name: 'Bill Book (A5)',
-                              type: 'Bill Book',
-                              basePrice: 120
-                            });
-                            setCustomOrderOpen(true);
-                          }}
-                        >
-                          Customize
-                        </Button>
-                      </div>
-                    </Card>
-
-                    {/* Money Receipt Product Card */}
-                    <Card className="p-4 border hover:shadow-lg transition-shadow">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="font-semibold text-gray-800">Money Receipt</h4>
-                          <p className="text-sm text-gray-600">50 Pages</p>
-                        </div>
-                        <div className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">2 Color</div>
-                      </div>
-                      <div className="space-y-2 text-sm text-gray-600 mb-3">
-                        <div className="flex justify-between">
-                          <span>Size:</span>
-                          <span className="font-medium">A4</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Print:</span>
-                          <span className="font-medium">2 Color</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Paper:</span>
-                          <span className="font-medium">80 GSM</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Pages:</span>
-                          <span className="font-medium">50</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-2xl font-bold text-green-600">¥150</p>
-                          <p className="text-xs text-gray-500">per book</p>
-                        </div>
-                        <Button 
-                          className="bg-green-600 hover:bg-green-700"
-                          onClick={() => {
-                            window.location.href = '/orders';
-                            setActiveSection('printing');
-                            setSelectedProduct({
-                              name: 'Money Receipt',
-                              type: 'Money Receipt',
-                              basePrice: 150
-                            });
-                            setCustomOrderOpen(true);
-                          }}
-                        >
-                          Customize
-                        </Button>
-                      </div>
-                    </Card>
-
-                    {/* Visiting Card Product Card */}
-                    <Card className="p-4 border hover:shadow-lg transition-shadow">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="font-semibold text-gray-800">Visiting Card</h4>
-                          <p className="text-sm text-gray-600">Premium Quality</p>
-                        </div>
-                        <div className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">Full Color</div>
-                      </div>
-                      <div className="space-y-2 text-sm text-gray-600 mb-3">
-                        <div className="flex justify-between">
-                          <span>Size:</span>
-                          <span className="font-medium">90x54mm</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Print:</span>
-                          <span className="font-medium">Full Color</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Paper:</span>
-                          <span className="font-medium">300 GSM</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Quantity:</span>
-                          <span className="font-medium">100 pcs</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-2xl font-bold text-green-600">¥250</p>
-                          <p className="text-xs text-gray-500">per 100 pcs</p>
-                        </div>
-                        <Button 
-                          className="bg-orange-600 hover:bg-orange-700"
-                          onClick={() => {
-                            window.location.href = '/orders';
-                            setActiveSection('printing');
-                            setSelectedProduct({
-                              name: 'Visiting Card',
-                              type: 'Visiting Card',
-                              basePrice: 250
-                            });
-                            setCustomOrderOpen(true);
-                          }}
-                        >
-                          Customize
-                        </Button>
-                      </div>
-                    </Card>
-                  </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-gray-800 mb-3">Quick Actions</h4>
-                  <div className="flex gap-3 justify-center">
-                    <Button variant="outline" className="flex items-center gap-2">
-                      <Package className="h-4 w-4" />
-                      View All Orders
-                    </Button>
-                    <Button variant="outline" className="flex items-center gap-2">
-                      <RefreshCw className="h-4 w-4" />
-                      Download Catalog
-                    </Button>
-                    <Button variant="outline" className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Share Services
-                    </Button>
-                  </div>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Printing Dashboard</h2>
+                  <p className="text-gray-600">Manage your printing business efficiently</p>
                 </div>
               </div>
             )}
 
-            {/* Printing Section */}
-
-          {/* Charts */}
+            {/* Charts */}
           <Dashboard />
         </div>
       </main>

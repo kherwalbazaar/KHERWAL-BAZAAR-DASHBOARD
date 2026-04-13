@@ -127,6 +127,16 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
+    id: 'products',
+    label: 'Products',
+    icon: Package,
+    children: [
+      { id: 'all-products', label: 'All Products', icon: Package, badge: '5' },
+      { id: 'add-product', label: 'Add Product', icon: Plus },
+      { id: 'categories', label: 'Categories', icon: FileText }
+    ]
+  },
+  {
     id: 'reports',
     label: 'Reports',
     icon: BarChart3,
@@ -182,8 +192,20 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
       if (item.id === 'quick-entry') {
         // Quick order entry - open fast billing modal
         console.log('Opening quick order entry...')
+      } else if (item.id === 'all-products') {
+        // Navigate to printing products page
+        window.location.href = '/printing/products'
+      } else if (item.id === 'add-product') {
+        // Navigate to add printing product page
+        window.location.href = '/printing/products/add-product'
+      } else if (item.id === 'categories') {
+        // Navigate to categories page
+        window.location.href = '/printing/products/categories'
+      } else {
+        // Other navigation
+        console.log(`Navigating to ${item.id}`)
+        onClose()
       }
-      onClose()
     }
   }
 
@@ -198,10 +220,10 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
       />
       
       {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out">
+      <div className="fixed left-0 top-0 h-full w-80 bg-green-50 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out">
         <div className="h-full flex flex-col">
           {/* Header */}
-          <div className="bg-gray-700 text-white p-6">
+          <div className="bg-green-600 text-white p-6">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold">Printing Shop</h2>
@@ -210,7 +232,7 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-white hover:bg-gray-600"
+                className="text-white hover:bg-green-700"
                 onClick={onClose}
               >
                 ×
@@ -220,10 +242,10 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
             {/* Quick Search */}
             <div className="mt-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-200" />
                 <Input
                   placeholder="Quick search orders..."
-                  className="pl-10 bg-gray-600 border-gray-500 text-white placeholder-gray-400"
+                  className="pl-10 bg-green-700 border-green-500 text-white placeholder-green-200"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -324,9 +346,9 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
           </div>
 
           {/* Footer */}
-          <div className="border-t border-gray-200 p-4 bg-gray-50">
-            <div className="text-xs text-gray-500 text-center">
-              <p className="font-medium text-gray-700">💾 Remember to backup data daily!</p>
+          <div className="border-t border-green-200 p-4 bg-green-100">
+            <div className="text-xs text-green-700 text-center">
+              <p className="font-medium text-green-800">💾 Remember to backup data daily!</p>
               <p>© 2024 Kherwal Bazaar Printing Shop</p>
             </div>
           </div>

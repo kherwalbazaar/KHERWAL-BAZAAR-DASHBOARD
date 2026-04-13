@@ -487,9 +487,9 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
 
   const printingNavItems = [
     {
-      label: 'Dashboard',
+      label: 'Products',
       href: '/printing',
-      icon: LayoutDashboard,
+      icon: Package,
       count: null,
     },
     {

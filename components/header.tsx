@@ -69,7 +69,9 @@ export function Header({
   return (
     <>
       {/* Header Bar */}
-      <header className="fixed top-0 right-0 left-0 h-24 bg-blue-500 border-b border-border shadow-sm z-40">
+      <header className={`fixed top-0 right-0 left-0 h-24 border-b border-border shadow-sm z-40 ${
+        activeSection === 'printing' ? 'bg-green-600' : 'bg-blue-500'
+      }`}>
         <div className="h-full px-6 flex items-center justify-between relative">
           {/* Left Side - Logo, Title and Tagline */}
           <div className="flex items-center gap-3">
@@ -95,14 +97,20 @@ export function Header({
                 onClick={handleRefresh} 
                 variant="outline"
                 size="default"
-                className="flex items-center gap-2 font-medium transition-all duration-200 h-10 !bg-white !text-green-600 !border-green-300 cursor-pointer hover:!bg-green-50"
+                className={`flex items-center gap-2 font-medium transition-all duration-200 h-10 !bg-white cursor-pointer hover:!bg-gray-50 ${
+                  activeSection === 'printing' 
+                    ? '!text-pink-600 !border-pink-300' 
+                    : '!text-green-600 !border-green-300'
+                }`}
               >
                 <div className={`w-2.5 h-2.5 rounded-full transition-all ${
-                  dataStatus === 'green' ? 'bg-green-500' :
-                  dataStatus === 'yellow' ? 'bg-yellow-500 animate-pulse' :
-                  'bg-red-500'
+                  dataStatus === 'green' 
+                    ? (activeSection === 'printing' ? 'bg-pink-500' : 'bg-green-500')
+                    : dataStatus === 'yellow' 
+                    ? 'bg-yellow-500 animate-pulse' 
+                    : 'bg-red-500'
                 }`}></div>
-                {dataStatus === 'green' && '✓ Up to date'}
+                {dataStatus === 'green' && (activeSection === 'printing' ? '✓ ONLINE' : '✓ Up to date')}
                 {dataStatus === 'yellow' && (
                   <>
                     <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -185,8 +193,8 @@ export function Header({
                   className={cn(
                     "font-medium rounded-sm transition-all duration-200",
                     activeButton === 'printing' 
-                      ? "!bg-white text-blue-500 border-gray-300" 
-                      : "bg-gray-400 text-white hover:bg-gray-500"
+                      ? "!bg-white text-green-600 border-gray-300" 
+                      : (activeSection === 'printing' ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-400 text-white hover:bg-gray-500")
                   )}
                   onClick={() => {
                     setActiveButton(activeButton === 'printing' ? null : 'printing')
@@ -195,7 +203,7 @@ export function Header({
                 >
                   <span 
                     className={activeButton === 'printing' ? 
-                      'text-red-500 -translate-y-0.5' 
+                      'text-green-600 -translate-y-0.5' 
                     : 
                       'text-white'
                     }
