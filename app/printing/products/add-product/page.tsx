@@ -78,7 +78,7 @@ const turnaroundTimes = [
   '2 Weeks'
 ]
 
-export default function AddPrintingProductPage() {
+function AddPrintingProductPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const editId = searchParams.get('edit')
@@ -429,7 +429,7 @@ export default function AddPrintingProductPage() {
 function AddProductPageWrapper() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <AddProductPage />
+      <AddPrintingProductPage />
     </Suspense>
   )
 }
