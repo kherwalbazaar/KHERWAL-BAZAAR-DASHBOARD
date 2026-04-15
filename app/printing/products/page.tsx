@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ArrowLeft, Plus, Search, Filter, Edit, Trash2, Package, DollarSign, Box, FileText, TrendingUp, MoreVertical, Printer } from 'lucide-react'
+import { ArrowLeft, Plus, Search, Filter, Edit, Trash2, Package, DollarSign, Box, FileText, TrendingUp, MoreVertical, Printer, AlertTriangle, List } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -183,12 +183,40 @@ export default function PrintingProductsPage() {
             <Badge variant="secondary" className="text-sm px-3 py-1 bg-white text-purple-600">
               Total Qty: 0
             </Badge>
-            <Link href="/printing/products/add-product">
-              <Button className="gap-2 bg-white text-purple-600 hover:bg-green-500 hover:text-white">
-                <Plus className="h-4 w-4" />
-                Add Product
-              </Button>
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="gap-2 bg-white text-purple-600 hover:bg-green-500 hover:text-white">
+                  <Plus className="h-4 w-4" />
+                  Add Items
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/printing/products/add-product" className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add Items
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/printing/products" className="flex items-center gap-2">
+                    <List className="h-4 w-4" />
+                    All Items
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/printing/products/categories" className="flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    Category
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/printing/products/low-stock" className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    Low Stock Alert
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -265,7 +293,7 @@ export default function PrintingProductsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => router.back()}>
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => router.push('/')}>
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
@@ -278,12 +306,40 @@ export default function PrintingProductsPage() {
           <Badge variant="secondary" className="text-sm px-3 py-1">
             Total Qty: {totalStock}
           </Badge>
-          <Link href="/printing/products/add-product">
-            <Button className="gap-2 bg-purple-600 hover:bg-purple-700 text-white">
-              <Plus className="h-4 w-4" />
-              Add Product
-            </Button>
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="gap-2 bg-purple-600 hover:bg-purple-700 text-white">
+                <Plus className="h-4 w-4" />
+                Add Items
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link href="/printing/products/add-product" className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Items
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/printing/products" className="flex items-center gap-2">
+                  <List className="h-4 w-4" />
+                  All Items
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/printing/products/categories" className="flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Category
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/printing/products/low-stock" className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  Low Stock Alert
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

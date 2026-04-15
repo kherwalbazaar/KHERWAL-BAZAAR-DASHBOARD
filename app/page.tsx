@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { SidebarNav } from '@/components/sidebar-nav'
 import { Header } from '@/components/header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Dashboard } from '@/components/dashboard'
 import { TrendingUp, ShoppingCart, Users, DollarSign, Package, Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -466,16 +467,190 @@ export default function Home() {
                   <h2 className="text-2xl font-bold text-gray-800 mb-2">KHERWAL BAZAAR</h2>
                   <p className="text-gray-600">Premium garments and fashion collection</p>
                 </div>
-
-                              </div>
+                
+                {/* Garments Categories */}
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="h-8 w-8 text-blue-600" />
+                      </div>
+                      <CardTitle className="text-lg">Men's Wear</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-sm text-gray-600">Shirts, Pants, T-shirts</p>
+                      <Badge variant="secondary" className="mt-2">125 Items</Badge>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="h-8 w-8 text-pink-600" />
+                      </div>
+                      <CardTitle className="text-lg">Women's Wear</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-sm text-gray-600">Dresses, Tops, Bottoms</p>
+                      <Badge variant="secondary" className="mt-2">89 Items</Badge>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="h-8 w-8 text-green-600" />
+                      </div>
+                      <CardTitle className="text-lg">Kids Wear</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-sm text-gray-600">Boys & Girls Collection</p>
+                      <Badge variant="secondary" className="mt-2">67 Items</Badge>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="h-8 w-8 text-purple-600" />
+                      </div>
+                      <CardTitle className="text-lg">Accessories</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-sm text-gray-600">Bags, Belts, Watches</p>
+                      <Badge variant="secondary" className="mt-2">43 Items</Badge>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             )}
 
             {/* Printing Section */}
             {activeSection === 'printing' && (
               <div className="space-y-6">
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Printing Dashboard</h2>
-                  <p className="text-gray-600">Manage your printing business efficiently</p>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Printing Services</h2>
+                  <p className="text-gray-600">Professional printing solutions for all needs</p>
+                </div>
+                
+                {/* Printing Categories */}
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-green-200">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="h-8 w-8 text-green-600" />
+                      </div>
+                      <CardTitle className="text-lg">Business Cards</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-sm text-gray-600">Premium quality cards</p>
+                      <Badge className="mt-2 bg-green-100 text-green-800">15 Types</Badge>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-green-200">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="h-8 w-8 text-green-600" />
+                      </div>
+                      <CardTitle className="text-lg">Stationery</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-sm text-gray-600">Letterheads, Envelopes</p>
+                      <Badge className="mt-2 bg-green-100 text-green-800">8 Types</Badge>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-green-200">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="h-8 w-8 text-green-600" />
+                      </div>
+                      <CardTitle className="text-lg">Marketing</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-sm text-gray-600">Flyers, Brochures</p>
+                      <Badge className="mt-2 bg-green-100 text-green-800">12 Types</Badge>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-green-200">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="h-8 w-8 text-green-600" />
+                      </div>
+                      <CardTitle className="text-lg">Large Format</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-sm text-gray-600">Posters, Banners</p>
+                      <Badge className="mt-2 bg-green-100 text-green-800">6 Types</Badge>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {/* Online Section */}
+            {activeSection === 'online' && (
+              <div className="space-y-6">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Online Services</h2>
+                  <p className="text-gray-600">Digital services and solutions</p>
+                </div>
+                
+                {/* Online Categories */}
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-pink-200">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="h-8 w-8 text-pink-600" />
+                      </div>
+                      <CardTitle className="text-lg">User Panel</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-sm text-gray-600">Account management</p>
+                      <Badge className="mt-2 bg-pink-100 text-pink-800">Active</Badge>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-pink-200">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="h-8 w-8 text-pink-600" />
+                      </div>
+                      <CardTitle className="text-lg">Certificates</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-sm text-gray-600">Digital certificates</p>
+                      <Badge className="mt-2 bg-pink-100 text-pink-800">23 Available</Badge>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-pink-200">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="h-8 w-8 text-pink-600" />
+                      </div>
+                      <CardTitle className="text-lg">Forms</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-sm text-gray-600">Online applications</p>
+                      <Badge className="mt-2 bg-pink-100 text-pink-800">12 Forms</Badge>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-pink-200">
+                    <CardHeader className="text-center">
+                      <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="h-8 w-8 text-pink-600" />
+                      </div>
+                      <CardTitle className="text-lg">Reports</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-sm text-gray-600">Analytics & insights</p>
+                      <Badge className="mt-2 bg-pink-100 text-pink-800">Live</Badge>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             )}

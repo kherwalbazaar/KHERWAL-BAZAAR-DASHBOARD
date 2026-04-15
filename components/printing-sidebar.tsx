@@ -47,27 +47,16 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
-    id: 'new-order',
-    label: 'New Order',
-    icon: Plus,
-    isImportant: true,
-    children: [
-      { id: 'quick-entry', label: 'Quick order entry', icon: Plus },
-      { id: 'customer-details', label: 'Customer name + mobile', icon: Users },
-      { id: 'job-type', label: 'Job type (Bill book, card, etc.)', icon: FileText },
-      { id: 'quantity-price', label: 'Quantity + price', icon: DollarSign }
-    ]
-  },
-  {
-    id: 'orders-list',
-    label: 'Orders List',
+    id: 'order',
+    label: 'Order',
     icon: List,
     badge: '18',
     children: [
-      { id: 'all-orders', label: 'All Orders', icon: List },
-      { id: 'pending', label: 'Pending', icon: AlertCircle, badge: '5' },
-      { id: 'completed', label: 'Completed', icon: CheckCircle, badge: '13' },
-      { id: 'search', label: 'Search by name/mobile', icon: Search }
+      { id: 'new-order', label: 'New Order', icon: Plus },
+      { id: 'orders-list', label: 'Orders List', icon: List, badge: '1' },
+      { id: 'pending-orders', label: 'Pending Orders', icon: AlertCircle, badge: '1' },
+      { id: 'in-progress', label: 'In Progress', icon: Printer, badge: '0' },
+      { id: 'completed', label: 'Completed', icon: CheckCircle, badge: '0' }
     ]
   },
   {
