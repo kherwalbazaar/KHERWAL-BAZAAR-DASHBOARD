@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Header } from '@/components/header'
 import { SidebarNav } from '@/components/sidebar-nav'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,6 +13,7 @@ interface PrintingLayoutProps {
 
 export default function PrintingLayout({ children }: PrintingLayoutProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const [activeSection, setActiveSection] = useState('printing')
   const [metrics, setMetrics] = useState({
     totalPrintingSales: 45000,
@@ -31,6 +32,9 @@ export default function PrintingLayout({ children }: PrintingLayoutProps) {
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  // Hide sidebar for add-product page
+  const showSidebar = !pathname?.includes('/add-product')
 
   // Handle section changes - navigate to main dashboard when switching sections
   const handleSectionChange = (section: string) => {
@@ -51,9 +55,9 @@ export default function PrintingLayout({ children }: PrintingLayoutProps) {
         dataStatus={'green'}
       />
       <div className="flex flex-1">
-        <SidebarNav activeSection={activeSection} />
+        {showSidebar && <SidebarNav activeSection={activeSection} />}
         {/* Main Content */}
-        <main className="flex-1 ml-64 bg-background">
+        <main className={`flex-1 ${showSidebar ? 'ml-64' : ''} bg-background`}>
           <div className="w-full mt-20">
             {/* Page Content Only */}
             {children}

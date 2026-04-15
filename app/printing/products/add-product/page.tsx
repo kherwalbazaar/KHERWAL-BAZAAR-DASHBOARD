@@ -16,6 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from '@/components/ui/radio-group'
 
 interface PrintingProduct {
   id: string
@@ -78,6 +82,76 @@ const turnaroundTimes = [
   '2 Weeks'
 ]
 
+// Recent Products List Component
+function RecentProductsList() {
+  const [recentProducts, setRecentProducts] = useState<PrintingProduct[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadRecentProducts()
+  }, [])
+
+  const loadRecentProducts = async () => {
+    try {
+      setLoading(true)
+      const { getPrintingProducts } = await import('@/lib/firebase')
+      const result = await getPrintingProducts()
+      
+      if (result.success && result.products) {
+        // Sort by createdAt date (newest first) and take first 8
+        const sorted = result.products
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 8)
+        setRecentProducts(sorted)
+      }
+    } catch (error) {
+      console.error('Error loading recent products:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+        <span className="ml-2 text-sm text-muted-foreground">Loading recent products...</span>
+      </div>
+    )
+  }
+
+  if (recentProducts.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <p className="text-muted-foreground">No products added yet</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {recentProducts.map((product) => (
+        <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+              <Package className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <p className="font-medium text-sm">{product.name}</p>
+              <p className="text-xs text-muted-foreground">{product.sku} • {product.category}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="font-medium text-sm">₹{product.price.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">{product.status}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function AddPrintingProductPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -119,24 +193,25 @@ function AddPrintingProductPage() {
 
   const loadProductForEdit = async (productId: string) => {
     try {
-      // Mock data for editing - in real implementation, fetch from Firebase
-      const mockProduct: PrintingProduct = {
-        id: productId,
-        name: 'Business Card Printing',
-        sku: 'BC-001',
-        category: 'Business Cards',
-        price: 2.50,
-        stock: 1000,
-        description: 'High-quality business card printing with various paper options.',
-        paperType: 'Glossy',
-        printSize: 'Business Card (90x50mm)',
-        minQuantity: 100,
-        turnaroundTime: '2-3 Days',
-        status: 'In Stock'
+      const { getPrintingProducts } = await import('@/lib/firebase')
+      const result = await getPrintingProducts()
+      
+      if (result.success && result.products) {
+        const product = result.products.find((p: PrintingProduct) => p.id === productId)
+        if (product) {
+          setFormData(product)
+        } else {
+          alert('Product not found')
+          router.push('/printing/products')
+        }
+      } else {
+        alert('Error loading product')
+        router.push('/printing/products')
       }
-      setFormData(mockProduct)
     } catch (error) {
       console.error('Error loading product for edit:', error)
+      alert('Error loading product')
+      router.push('/printing/products')
     }
   }
 
@@ -158,14 +233,22 @@ function AddPrintingProductPage() {
         return
       }
 
-      // In a real implementation, this would save to Firebase
-      console.log('Saving printing product:', formData)
+      const { addPrintingProduct, updatePrintingProduct } = await import('@/lib/firebase')
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      let result
+      if (isEditing && editId) {
+        result = await updatePrintingProduct(editId, formData)
+      } else {
+        result = await addPrintingProduct(formData)
+      }
 
-      alert(`Printing product ${isEditing ? 'updated' : 'added'} successfully!`)
-      router.push('/printing/products')
+      if (result.success) {
+        alert(`Printing product ${isEditing ? 'updated' : 'added'} successfully!`)
+        router.push('/printing/products')
+      } else {
+        console.error('Error saving product:', result.error)
+        alert('Error saving product. Please try again.')
+      }
     } catch (error) {
       console.error('Error saving product:', error)
       alert('Error saving product. Please try again.')
@@ -298,105 +381,8 @@ function AddPrintingProductPage() {
           </CardContent>
         </Card>
 
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              Printing Specifications
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="paperType">Paper Type</Label>
-                <Select value={formData.paperType} onValueChange={(value) => handleInputChange('paperType', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select paper type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {paperTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="printSize">Print Size</Label>
-                <Select value={formData.printSize} onValueChange={(value) => handleInputChange('printSize', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select print size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {printSizes.map((size) => (
-                      <SelectItem key={size} value={size}>
-                        {size}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="minQuantity">Minimum Quantity</Label>
-                <Input
-                  id="minQuantity"
-                  type="number"
-                  min="1"
-                  placeholder="1"
-                  value={formData.minQuantity}
-                  onChange={(e) => handleInputChange('minQuantity', parseInt(e.target.value) || 1)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="stock">Available Stock</Label>
-                <Input
-                  id="stock"
-                  type="number"
-                  min="0"
-                  placeholder="0"
-                  value={formData.stock}
-                  onChange={(e) => handleInputChange('stock', parseInt(e.target.value) || 0)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="turnaroundTime">Turnaround Time</Label>
-                <Select value={formData.turnaroundTime} onValueChange={(value) => handleInputChange('turnaroundTime', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select turnaround" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {turnaroundTimes.map((time) => (
-                      <SelectItem key={time} value={time}>
-                        {time}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="In Stock">In Stock</SelectItem>
-                  <SelectItem value="Low Stock">Low Stock</SelectItem>
-                  <SelectItem value="Out of Stock">Out of Stock</SelectItem>
-                  <SelectItem value="Discontinued">Discontinued</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end gap-3 mt-8">
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3 mt-6">
           <Link href="/printing/products">
             <Button variant="outline" type="button">
               Cancel
@@ -420,6 +406,19 @@ function AddPrintingProductPage() {
             )}
           </Button>
         </div>
+
+        {/* Recently Added Products Section */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Recently Added Products
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RecentProductsList />
+          </CardContent>
+        </Card>
       </form>
     </div>
   )

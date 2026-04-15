@@ -426,4 +426,114 @@ export const deleteJobType = async (jobTypeId: string) => {
   }
 };
 
+// Printing Products
+export const addPrintingProduct = async (productData: any) => {
+  try {
+    console.log('[Firebase] Adding printing product:', productData);
+    const docRef = await addDoc(collection(db, 'printing-products'), {
+      ...productData,
+      createdAt: new Date().toISOString()
+    });
+    console.log('[Firebase] ✅ Printing product added successfully with ID:', docRef.id);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('[Firebase] ❌ Error adding printing product:', error);
+    return { success: false, error };
+  }
+};
+
+export const getPrintingProducts = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'printing-products'));
+    const products: any[] = [];
+    querySnapshot.forEach((doc) => {
+      products.push({ id: doc.id, ...doc.data() });
+    });
+    return { success: true, products };
+  } catch (error) {
+    console.error('Error getting printing products:', error);
+    return { success: false, error };
+  }
+};
+
+export const updatePrintingProduct = async (productId: string, productData: any) => {
+  try {
+    console.log(`[Firebase] Updating printing product ${productId}:`, productData);
+    const productRef = doc(db, 'printing-products', productId);
+    await updateDoc(productRef, productData);
+    console.log(`[Firebase] ✅ Printing product updated successfully: ${productId}`);
+    return { success: true, id: productId };
+  } catch (error) {
+    console.error(`[Firebase] ❌ Error updating printing product ${productId}:`, error);
+    return { success: false, error };
+  }
+};
+
+export const deletePrintingProduct = async (productId: string) => {
+  try {
+    const productRef = doc(db, 'printing-products', productId);
+    await deleteDoc(productRef);
+    console.log('Printing product deleted with ID:', productId);
+    return { success: true, id: productId };
+  } catch (error) {
+    console.error('Error deleting printing product:', error);
+    return { success: false, error };
+  }
+};
+
+// Printing Product Categories
+export const addPrintingCategory = async (categoryData: any) => {
+  try {
+    console.log('[Firebase] Adding printing category:', categoryData);
+    const docRef = await addDoc(collection(db, 'printing-categories'), {
+      ...categoryData,
+      createdAt: new Date().toISOString()
+    });
+    console.log('[Firebase] ✅ Printing category added successfully with ID:', docRef.id);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('[Firebase] ❌ Error adding printing category:', error);
+    return { success: false, error };
+  }
+};
+
+export const getPrintingCategories = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'printing-categories'));
+    const categories: any[] = [];
+    querySnapshot.forEach((doc) => {
+      categories.push({ id: doc.id, ...doc.data() });
+    });
+    return { success: true, categories };
+  } catch (error) {
+    console.error('Error getting printing categories:', error);
+    return { success: false, error };
+  }
+};
+
+export const updatePrintingCategory = async (categoryId: string, categoryData: any) => {
+  try {
+    console.log(`[Firebase] Updating printing category ${categoryId}:`, categoryData);
+    const categoryRef = doc(db, 'printing-categories', categoryId);
+    await updateDoc(categoryRef, categoryData);
+    console.log(`[Firebase] ✅ Printing category updated successfully: ${categoryId}`);
+    return { success: true, id: categoryId };
+  } catch (error) {
+    console.error(`[Firebase] ❌ Error updating printing category ${categoryId}:`, error);
+    return { success: false, error };
+  }
+};
+
+export const deletePrintingCategory = async (categoryId: string) => {
+  try {
+    const categoryRef = doc(db, 'printing-categories', categoryId);
+    await deleteDoc(categoryRef);
+    console.log('Printing category deleted with ID:', categoryId);
+    return { success: true, id: categoryId };
+  } catch (error) {
+    console.error('Error deleting printing category:', error);
+    return { success: false, error };
+  }
+};
+
 export { app, analytics, db };

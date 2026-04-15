@@ -487,40 +487,74 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
 
   const printingNavItems = [
     {
-      label: 'Products',
-      href: '/printing',
+      label: '📦 Products',
+      href: '/printing/products',
       icon: Package,
       count: null,
+      children: [
+        {
+          label: '➕ Add Product',
+          href: '/printing/products/add-product',
+          icon: Plus,
+          count: null,
+        },
+        {
+          label: '📋 All Products',
+          href: '/printing/products',
+          icon: Package,
+          count: null,
+        },
+        {
+          label: '🗂️ Categories',
+          href: '/printing/products/categories',
+          icon: FileText,
+          count: null,
+        },
+        {
+          label: '⚠️ Low Stock',
+          href: '/printing/products/low-stock',
+          icon: AlertTriangle,
+          count: 3,
+        },
+      ],
     },
     {
-      label: 'New Order',
-      href: '/printing/new-order',
-      icon: Plus,
-      count: null,
-    },
-    {
-      label: 'Orders List',
+      label: '📋 Orders',
       href: '/printing/orders',
       icon: List,
       count: loading ? null : printingData.totalOrders,
-    },
-    {
-      label: 'Pending Orders',
-      href: '/printing/orders?status=pending',
-      icon: Clock,
-      count: loading ? null : printingData.pendingOrders,
-    },
-    {
-      label: 'In Progress',
-      href: '/printing/orders?status=in-progress',
-      icon: Settings,
-      count: loading ? null : printingData.inProgressOrders,
-    },
-    {
-      label: 'Completed',
-      href: '/printing/orders?status=completed',
-      icon: CheckCircle,
-      count: loading ? null : printingData.completedOrders,
+      children: [
+        {
+          label: '➕ New Order',
+          href: '/printing/new-order',
+          icon: Plus,
+          count: null,
+        },
+        {
+          label: '📋 All Orders',
+          href: '/printing/orders',
+          icon: List,
+          count: loading ? null : printingData.totalOrders,
+        },
+        {
+          label: '⏳ Pending',
+          href: '/printing/orders?status=pending',
+          icon: Clock,
+          count: loading ? null : printingData.pendingOrders,
+        },
+        {
+          label: '⚙️ In Progress',
+          href: '/printing/orders?status=in-progress',
+          icon: Settings,
+          count: loading ? null : printingData.inProgressOrders,
+        },
+        {
+          label: '✅ Completed',
+          href: '/printing/orders?status=completed',
+          icon: CheckCircle,
+          count: loading ? null : printingData.completedOrders,
+        },
+      ],
     },
     {
       label: 'Customers',

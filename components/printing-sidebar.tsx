@@ -48,15 +48,15 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'order',
-    label: 'Order',
+    label: '📋 Orders',
     icon: List,
     badge: '18',
     children: [
-      { id: 'new-order', label: 'New Order', icon: Plus },
-      { id: 'orders-list', label: 'Orders List', icon: List, badge: '1' },
-      { id: 'pending-orders', label: 'Pending Orders', icon: AlertCircle, badge: '1' },
-      { id: 'in-progress', label: 'In Progress', icon: Printer, badge: '0' },
-      { id: 'completed', label: 'Completed', icon: CheckCircle, badge: '0' }
+      { id: 'new-order', label: '➕ New Order', icon: Plus },
+      { id: 'orders-list', label: '📋 All Orders', icon: List, badge: '1' },
+      { id: 'pending-orders', label: '⏳ Pending', icon: AlertCircle, badge: '1' },
+      { id: 'in-progress', label: '⚙️ In Progress', icon: Printer, badge: '0' },
+      { id: 'completed', label: '✅ Completed', icon: CheckCircle, badge: '0' }
     ]
   },
   {
@@ -117,12 +117,13 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'products',
-    label: 'Products',
+    label: '📦 Products',
     icon: Package,
     children: [
-      { id: 'all-products', label: 'All Products', icon: Package, badge: '5' },
-      { id: 'add-product', label: 'Add Product', icon: Plus },
-      { id: 'categories', label: 'Categories', icon: FileText }
+      { id: 'add-product', label: '➕ Add Product', icon: Plus },
+      { id: 'all-products', label: '📋 All Products', icon: Package },
+      { id: 'categories', label: '🗂️ Categories', icon: FileText },
+      { id: 'low-stock', label: '⚠️ Low Stock', icon: AlertCircle, badge: '3' }
     ]
   },
   {
@@ -190,6 +191,9 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
       } else if (item.id === 'categories') {
         // Navigate to categories page
         window.location.href = '/printing/products/categories'
+      } else if (item.id === 'low-stock') {
+        // Navigate to low stock page
+        window.location.href = '/printing/products/low-stock'
       } else {
         // Other navigation
         console.log(`Navigating to ${item.id}`)
@@ -264,6 +268,54 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
                 const isExpanded = expandedItems.includes(item.id)
                 const hasChildren = item.children && item.children.length > 0
 
+                // Special handling for Products menu
+                if (item.id === 'products') {
+                  return (
+                    <div key={item.id} className="border border-green-400 rounded-lg overflow-hidden">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-between h-auto p-3 text-left text-white hover:bg-green-700 rounded-none"
+                        onClick={() => handleItemClick(item)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-medium text-green-100">{item.label}</span>
+                        </div>
+                        <ChevronDown 
+                          className={cn(
+                            "h-4 w-4 transition-transform duration-200",
+                            isExpanded && "rotate-180"
+                          )}
+                        />
+                      </Button>
+
+                      {/* Products Sub-items with custom styling */}
+                      {hasChildren && isExpanded && (
+                        <div className="ml-4 mt-2 space-y-2 bg-green-700 p-2">
+                          {item.children?.map((child) => {
+                            return (
+                              <Button
+                                key={child.id}
+                                variant="ghost"
+                                className="w-full justify-start h-auto p-2 text-left text-green-100 hover:bg-green-600 rounded-md"
+                                onClick={() => handleItemClick(child)}
+                              >
+                                <div className="flex items-center justify-between w-full">
+                                  <span className="text-sm">{child.label}</span>
+                                  {child.badge && (
+                                    <span className="bg-red-500 text-xs px-2 py-0.5 rounded-full text-white">
+                                      {child.badge}
+                                    </span>
+                                  )}
+                                </div>
+                              </Button>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                }
+
                 return (
                   <div key={item.id}>
                     <Button
@@ -293,10 +345,10 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
                         )}
                       </div>
                       {hasChildren && (
-                        <ChevronRight 
+                        <ChevronDown 
                           className={cn(
                             "h-4 w-4 transition-transform duration-200",
-                            isExpanded && "rotate-90"
+                            isExpanded && "rotate-180"
                           )}
                         />
                       )}

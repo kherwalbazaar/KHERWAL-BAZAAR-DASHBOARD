@@ -17,6 +17,36 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // ========== PRINTING PRODUCTS COLLECTION ==========
+    match /printing-products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========== PRINTING ORDERS COLLECTION ==========
+    match /printing-orders/{orderId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========== PRINTING CUSTOMERS COLLECTION ==========
+    match /printing-customers/{customerId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========== PRINTING CATEGORIES COLLECTION ==========
+    match /printing-categories/{categoryId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========== JOB TYPES COLLECTION ==========
+    match /job-types/{jobTypeId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // ========== SALES COLLECTION ==========
     // Only authenticated users can CREATE sales (during checkout)
     // Only ADMIN can READ all sales
@@ -33,6 +63,23 @@ service cloud.firestore {
     match /customers/{customerId} {
       allow read, write: if request.auth.uid == customerId;
       allow read: if isAdmin();
+    }
+
+    // ========== CHECKOUTS COLLECTION ==========
+    match /checkouts/{checkoutId} {
+      allow create: if isAuthenticated();
+      allow read: if isAdmin();
+    }
+
+    // ========== CATEGORIES COLLECTION ==========
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========== CONNECTION TEST COLLECTION ==========
+    match /connection-test/{docId} {
+      allow read, write: if true;
     }
 
     // ========== HELPER FUNCTIONS ==========
@@ -52,35 +99,26 @@ service cloud.firestore {
 
 ---
 
-## Alternative Rules (Simpler - No User Roles)
+## Development Rules (Allow All Access - For Testing)
 
-If you don't have a user roles system yet, use these simpler rules:
+For development and testing, use these permissive rules:
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // PRODUCTS: Everyone reads, no one can write from client
-    match /products/{productId} {
-      allow read: if true;
-      allow write: if false; // Update via Cloud Functions only
-    }
-
-    // SALES: Anyone authenticated can create, no one can delete
-    match /sales/{saleId} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null;
-      allow update, delete: if false;
-    }
-
-    // CUSTOMERS: Users manage their own profile
-    match /customers/{customerId} {
-      allow read, write: if request.auth.uid == customerId;
+    // Allow all operations for development
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
 ```
+
+**⚠️ WARNING: These rules allow anyone to read/write your database. Only use for development!**
+
+For production, implement proper authentication and use the admin-only rules above.
 
 ---
 

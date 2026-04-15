@@ -24,7 +24,7 @@ interface Category {
   id: string
   name: string
   description: string
-  productCount: number
+  productCount?: number
   status: 'active' | 'inactive'
   createdAt: string
 }
@@ -51,77 +51,24 @@ export default function PrintingCategoriesPage() {
   const loadCategories = async () => {
     try {
       setLoading(true)
-      // Mock categories data - in real implementation, fetch from Firebase
-      const mockCategories: Category[] = [
-        {
-          id: 'cat1',
-          name: 'Business Cards',
-          description: 'Professional business cards in various sizes and paper types',
-          productCount: 15,
-          status: 'active',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'cat2',
-          name: 'Stationery',
-          description: 'Letterheads, envelopes, and office stationery items',
-          productCount: 8,
-          status: 'active',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'cat3',
-          name: 'Marketing Materials',
-          description: 'Flyers, brochures, and promotional materials',
-          productCount: 12,
-          status: 'active',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'cat4',
-          name: 'Large Format',
-          description: 'Posters, banners, and large format printing',
-          productCount: 6,
-          status: 'active',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'cat5',
-          name: 'Packaging',
-          description: 'Custom packaging solutions and boxes',
-          productCount: 4,
-          status: 'inactive',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'cat6',
-          name: 'Labels & Stickers',
-          description: 'Custom labels and stickers for various applications',
-          productCount: 9,
-          status: 'active',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'cat7',
-          name: 'Books & Booklets',
-          description: 'Book printing, booklets, and bound documents',
-          productCount: 3,
-          status: 'active',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'cat8',
-          name: 'Invitations',
-          description: 'Wedding invitations, event invitations, and cards',
-          productCount: 11,
-          status: 'active',
-          createdAt: new Date().toISOString()
-        }
-      ]
+      const { getPrintingCategories } = await import('@/lib/firebase')
+      const result = await getPrintingCategories()
       
-      setCategories(mockCategories)
+      if (result.success && result.categories) {
+        // Ensure productCount is always a valid number
+        const processedCategories = result.categories.map(category => ({
+          ...category,
+          productCount: typeof category.productCount === 'number' && !isNaN(category.productCount) 
+            ? category.productCount 
+            : 0
+        }))
+        setCategories(processedCategories)
+      } else {
+        setCategories([])
+      }
     } catch (error) {
       console.error('Error loading categories:', error)
+      setCategories([])
     } finally {
       setLoading(false)
     }
@@ -159,28 +106,33 @@ export default function PrintingCategoriesPage() {
         return
       }
 
+      const { addPrintingCategory, updatePrintingCategory } = await import('@/lib/firebase')
+      
+      let result
       if (editingCategory) {
-        // Update existing category
-        setCategories(categories.map(cat => 
-          cat.id === editingCategory.id 
-            ? { ...cat, name: formData.name, description: formData.description, status: formData.status }
-            : cat
-        ))
-      } else {
-        // Add new category
-        const newCategory: Category = {
-          id: `cat${Date.now()}`,
+        result = await updatePrintingCategory(editingCategory.id, {
           name: formData.name,
           description: formData.description,
-          productCount: 0,
           status: formData.status,
-          createdAt: new Date().toISOString()
-        }
-        setCategories([...categories, newCategory])
+          productCount: editingCategory.productCount || 0
+        })
+      } else {
+        result = await addPrintingCategory({
+          name: formData.name,
+          description: formData.description,
+          status: formData.status,
+          productCount: 0
+        })
       }
 
-      setIsDialogOpen(false)
-      alert(`Category ${editingCategory ? 'updated' : 'added'} successfully!`)
+      if (result.success) {
+        await loadCategories() // Reload categories after save
+        setIsDialogOpen(false)
+        alert(`Category ${editingCategory ? 'updated' : 'added'} successfully!`)
+      } else {
+        console.error('Error saving category:', result.error)
+        alert('Error saving category')
+      }
     } catch (error) {
       console.error('Error saving category:', error)
       alert('Error saving category')
@@ -190,8 +142,16 @@ export default function PrintingCategoriesPage() {
   const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
     if (window.confirm(`Are you sure you want to delete "${categoryName}"?`)) {
       try {
-        setCategories(categories.filter(cat => cat.id !== categoryId))
-        alert('Category deleted successfully')
+        const { deletePrintingCategory } = await import('@/lib/firebase')
+        const result = await deletePrintingCategory(categoryId)
+        
+        if (result.success) {
+          await loadCategories() // Reload categories after delete
+          alert('Category deleted successfully')
+        } else {
+          console.error('Error deleting category:', result.error)
+          alert('Error deleting category')
+        }
       } catch (error) {
         console.error('Error deleting category:', error)
         alert('Error deleting category')

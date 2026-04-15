@@ -17,9 +17,9 @@ interface PrintingProduct {
   name: string
   sku: string
   category: string
-  price: number
-  stock: number
-  sales: number
+  price?: number
+  stock?: number
+  sales?: number
   status: string
   image: string
   createdAt: string
@@ -44,89 +44,25 @@ export default function PrintingProductsPage() {
   const loadPrintingProducts = async () => {
     try {
       setLoading(true)
-      // For now, create mock printing products. In a real implementation, 
-      // this would fetch from Firebase with category filter for printing
-      const mockPrintingProducts: PrintingProduct[] = [
-        {
-          id: 'print1',
-          name: 'Business Card Printing',
-          sku: 'BC-001',
-          category: 'Business Cards',
-          price: 2.50,
-          stock: 1000,
-          sales: 150,
-          status: 'In Stock',
-          image: '',
-          createdAt: new Date().toISOString(),
-          paperType: 'Glossy',
-          printSize: '90x50mm',
-          minQuantity: 100
-        },
-        {
-          id: 'print2',
-          name: 'Letterhead Printing',
-          sku: 'LH-001',
-          category: 'Stationery',
-          price: 1.20,
-          stock: 500,
-          sales: 80,
-          status: 'In Stock',
-          image: '',
-          createdAt: new Date().toISOString(),
-          paperType: 'Premium',
-          printSize: 'A4',
-          minQuantity: 50
-        },
-        {
-          id: 'print3',
-          name: 'Flyer Printing',
-          sku: 'FL-001',
-          category: 'Marketing',
-          price: 0.80,
-          stock: 2000,
-          sales: 300,
-          status: 'In Stock',
-          image: '',
-          createdAt: new Date().toISOString(),
-          paperType: 'Standard',
-          printSize: 'A5',
-          minQuantity: 250
-        },
-        {
-          id: 'print4',
-          name: 'Brochure Printing',
-          sku: 'BR-001',
-          category: 'Marketing',
-          price: 3.50,
-          stock: 300,
-          sales: 45,
-          status: 'Low Stock',
-          image: '',
-          createdAt: new Date().toISOString(),
-          paperType: 'Glossy',
-          printSize: 'A4 Tri-fold',
-          minQuantity: 100
-        },
-        {
-          id: 'print5',
-          name: 'Poster Printing',
-          sku: 'PS-001',
-          category: 'Large Format',
-          price: 15.00,
-          stock: 50,
-          sales: 20,
-          status: 'In Stock',
-          image: '',
-          createdAt: new Date().toISOString(),
-          paperType: 'Matte',
-          printSize: 'A2',
-          minQuantity: 10
-        }
-      ]
+      const { getPrintingProducts } = await import('@/lib/firebase')
+      const result = await getPrintingProducts()
       
-      setProducts(mockPrintingProducts)
+      if (result.success && result.products) {
+        // Ensure numeric fields are valid numbers
+        const processedProducts = result.products.map(product => ({
+          ...product,
+          price: typeof product.price === 'number' && !isNaN(product.price) ? product.price : 0,
+          stock: typeof product.stock === 'number' && !isNaN(product.stock) ? product.stock : 0,
+          sales: typeof product.sales === 'number' && !isNaN(product.sales) ? product.sales : 0
+        }))
+        setProducts(processedProducts)
+      } else {
+        // If no products in Firebase, show empty state
+        setProducts([])
+      }
     } catch (error) {
       console.error('Error loading printing products:', error)
+      setProducts([])
     } finally {
       setLoading(false)
     }
@@ -143,12 +79,19 @@ export default function PrintingProductsPage() {
   const handleDeleteProduct = async (productId: string, productName: string) => {
     if (window.confirm(`Are you sure you want to delete "${productName}"?`)) {
       try {
-        // In a real implementation, this would call Firebase delete function
-        setProducts(products.filter(p => p.id !== productId))
-        console.log(`Product ${productName} deleted successfully`)
+        const { deletePrintingProduct } = await import('@/lib/firebase')
+        const result = await deletePrintingProduct(productId)
+        
+        if (result.success) {
+          setProducts(products.filter(p => p.id !== productId))
+          console.log(`Product ${productName} deleted successfully`)
+        } else {
+          console.error('Error deleting product:', result.error)
+          alert('Failed to delete product. Please try again.')
+        }
       } catch (error) {
         console.error('Error deleting product:', error)
-        alert('Error deleting product')
+        alert('Failed to delete product. Please try again.')
       }
     }
   }
@@ -450,17 +393,17 @@ export default function PrintingProductsPage() {
                       </TableCell>
                       <TableCell className="font-mono text-sm">{product.sku}</TableCell>
                       <TableCell>{product.category}</TableCell>
-                      <TableCell className="font-semibold">₹{product.price.toLocaleString()}</TableCell>
+                      <TableCell className="font-semibold">₹{(product.price || 0).toLocaleString()}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Box className="h-4 w-4 text-muted-foreground" />
-                          {product.stock}
+                          {product.stock || 0}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                          {product.sales}
+                          {product.sales || 0}
                         </div>
                       </TableCell>
                       <TableCell>

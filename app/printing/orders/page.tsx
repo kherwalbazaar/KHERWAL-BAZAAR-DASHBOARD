@@ -44,10 +44,14 @@ interface PrintingOrder {
     email?: string
   }
   items: any[]
-  total: number
-  advancePayment: number
-  balance: number
+  total?: number
+  advancePayment?: number
+  balance?: number
   paymentType: 'full' | 'advance'
+  status: string
+  deliveryDate: string
+  createdAt: string
+}
   paymentStatus: 'paid' | 'partial'
   status: string
   deliveryDate: string
@@ -66,7 +70,14 @@ export default function PrintingOrdersList() {
       setLoading(true)
       const result = await getPrintingOrders()
       if (result.success && result.orders) {
-        setOrders(result.orders)
+        // Ensure numeric fields are valid numbers
+        const processedOrders = result.orders.map(order => ({
+          ...order,
+          total: typeof order.total === 'number' && !isNaN(order.total) ? order.total : 0,
+          advancePayment: typeof order.advancePayment === 'number' && !isNaN(order.advancePayment) ? order.advancePayment : 0,
+          balance: typeof order.balance === 'number' && !isNaN(order.balance) ? order.balance : 0
+        }))
+        setOrders(processedOrders)
       }
     } catch (error) {
       console.error('Error loading orders:', error)
@@ -113,11 +124,12 @@ export default function PrintingOrdersList() {
     if (order.paymentType === 'full') {
       return <Badge className="bg-green-600">✓ Paid</Badge>
     }
+    const balance = order.balance || 0
     return (
       <div className="space-y-1">
         <Badge className="bg-orange-500">Partial</Badge>
-        {order.balance > 0 && (
-          <p className="text-xs text-orange-600">Due: ₹{order.balance.toLocaleString()}</p>
+        {balance > 0 && (
+          <p className="text-xs text-orange-600">Due: ₹{balance.toLocaleString()}</p>
         )}
       </div>
     )
@@ -217,7 +229,7 @@ export default function PrintingOrdersList() {
               <div>
                 <p className="text-sm text-gray-600">Total Revenue</p>
                 <p className="text-2xl font-bold text-green-600">
-                  ₹{orders.reduce((sum, o) => sum + o.total, 0).toLocaleString()}
+                  ₹{orders.reduce((sum, o) => sum + (o.total || 0), 0).toLocaleString()}
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -303,9 +315,9 @@ export default function PrintingOrdersList() {
                           <p className="text-sm text-gray-500">{order.customer.phone}</p>
                         </div>
                       </TableCell>
-                      <TableCell>{order.items.length} items</TableCell>
+                      <TableCell>{(order.items || []).length} items</TableCell>
                       <TableCell className="font-bold">
-                        ₹{order.total.toLocaleString()}
+                        ₹{(order.total || 0).toLocaleString()}
                       </TableCell>
                       <TableCell>
                         {getPaymentStatusBadge(order)}
