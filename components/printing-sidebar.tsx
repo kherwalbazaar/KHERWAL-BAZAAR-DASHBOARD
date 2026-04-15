@@ -220,7 +220,7 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
       />
       
       {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-80 bg-green-50 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out">
+      <div className="fixed left-0 top-0 h-full w-80 bg-green-600 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out">
         <div className="h-full flex flex-col">
           {/* Header */}
           <div className="bg-green-600 text-white p-6">
@@ -254,9 +254,9 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
           </div>
 
           {/* Quick Action Button */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-4 border-b border-green-500">
             <Button 
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3"
+              className="w-full bg-white hover:bg-gray-100 text-green-600 font-bold py-3"
               onClick={() => {
                 console.log('Opening quick order entry...')
                 onClose()
@@ -280,20 +280,20 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
                     <Button
                       variant="ghost"
                       className={cn(
-                        "w-full justify-between h-auto p-3 text-left",
-                        item.isImportant && "bg-green-50 border border-green-200 hover:bg-green-100",
-                        item.id === 'logout' && "text-red-600 hover:text-red-700 hover:bg-red-50"
+                        "w-full justify-between h-auto p-3 text-left text-white hover:bg-green-700",
+                        item.isImportant && "bg-green-700 border border-green-400 hover:bg-green-800",
+                        item.id === 'logout' && "text-red-300 hover:text-red-200 hover:bg-red-900"
                       )}
                       onClick={() => handleItemClick(item)}
                     >
                       <div className="flex items-center gap-3">
                         <Icon className={cn(
-                          "h-4 w-4 flex-shrink-0",
-                          item.isImportant && "text-green-600"
+                          "h-4 w-4 flex-shrink-0 text-green-200",
+                          item.isImportant && "text-white"
                         )} />
                         <span className={cn(
-                          "text-sm font-medium",
-                          item.isImportant && "text-green-700 font-bold"
+                          "text-sm font-medium text-green-100",
+                          item.isImportant && "text-white font-bold"
                         )}>
                           {item.label}
                         </span>
@@ -322,14 +322,14 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
                             <Button
                               key={child.id}
                               variant="ghost"
-                              className="w-full justify-start h-auto p-2 pl-8 text-left"
+                              className="w-full justify-start h-auto p-2 pl-8 text-left text-green-100 hover:bg-green-700"
                               onClick={() => handleItemClick(child)}
                             >
                               <div className="flex items-center gap-3">
-                                <ChildIcon className="h-3 w-3 flex-shrink-0 text-gray-500" />
-                                <span className="text-xs text-gray-700">{child.label}</span>
+                                <ChildIcon className="h-3 w-3 flex-shrink-0 text-green-300" />
+                                <span className="text-xs text-green-100">{child.label}</span>
                                 {child.badge && (
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge variant="outline" className="text-xs border-green-400 text-green-100">
                                     {child.badge}
                                   </Badge>
                                 )}
@@ -346,9 +346,9 @@ export function PrintingSidebar({ isOpen, onClose }: PrintingSidebarProps) {
           </div>
 
           {/* Footer */}
-          <div className="border-t border-green-200 p-4 bg-green-100">
-            <div className="text-xs text-green-700 text-center">
-              <p className="font-medium text-green-800">💾 Remember to backup data daily!</p>
+          <div className="border-t border-green-500 p-4 bg-green-700">
+            <div className="text-xs text-green-100 text-center">
+              <p className="font-medium text-white">💾 Remember to backup data daily!</p>
               <p>© 2024 Kherwal Bazaar Printing Shop</p>
             </div>
           </div>

@@ -632,15 +632,27 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
   return (
     <>
       {/* Sidebar - Always Visible */}
-      <aside className="fixed left-0 top-24 h-[calc(100vh-6rem)] w-64 bg-blue-500 flex flex-col overflow-hidden">
+      <aside className={`fixed left-0 top-24 h-[calc(100vh-6rem)] w-64 flex flex-col overflow-hidden ${
+        activeSection === 'printing' ? 'bg-green-500' : 
+        activeSection === 'online' ? 'bg-pink-500' : 
+        'bg-blue-500'
+      }`}>
         {/* Section Header */}
-        <div className="px-4 py-3 bg-blue-600 border-b border-blue-400">
+        <div className={`px-4 py-3 border-b ${
+          activeSection === 'printing' ? 'bg-green-600 border-green-400' : 
+          activeSection === 'online' ? 'bg-pink-600 border-pink-400' : 
+          'bg-blue-600 border-blue-400'
+        }`}>
           <h2 className="text-lg font-bold text-white">
             {activeSection === 'printing' ? '🖨️ PRINTING HUB' : 
              activeSection === 'online' ? '🌐 ONLINE SERVICES' : 
              '👕 KHERWAL BAZAAR'}
           </h2>
-          <p className="text-xs text-blue-100 mt-1">
+          <p className={`text-xs mt-1 ${
+            activeSection === 'printing' ? 'text-green-100' : 
+            activeSection === 'online' ? 'text-pink-100' : 
+            'text-blue-100'
+          }`}>
             {activeSection === 'printing' ? 'Professional Printing Solutions' : 
              activeSection === 'online' ? 'Digital Services Portal' : 
              'Redefining your Style'}
@@ -662,8 +674,16 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
                   className={cn(
                     'flex items-center justify-between px-4 py-2 rounded-xl transition-all duration-200 text-sm font-medium border-b border-gray-300',
                     active
-                      ? 'bg-white text-blue-600 shadow-md scale-105'
-                      : 'text-white hover:bg-white hover:text-blue-600'
+                      ? activeSection === 'printing' 
+                        ? 'bg-white text-green-600 shadow-md scale-105'
+                        : activeSection === 'online'
+                        ? 'bg-white text-pink-600 shadow-md scale-105'
+                        : 'bg-white text-blue-600 shadow-md scale-105'
+                      : activeSection === 'printing'
+                        ? 'text-white hover:bg-white hover:text-green-600'
+                        : activeSection === 'online'
+                        ? 'text-white hover:bg-white hover:text-pink-600'
+                        : 'text-white hover:bg-white hover:text-blue-600'
                   )}
                   onClick={(e) => {
                     if (hasChildren) {
@@ -675,7 +695,13 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
                   <div className="flex items-center gap-2">
                     <Icon className={cn(
                       'h-5 w-5 flex-shrink-0',
-                      active ? 'text-blue-600' : 'text-white'
+                      active 
+                        ? activeSection === 'printing' 
+                          ? 'text-green-600' 
+                          : activeSection === 'online'
+                          ? 'text-pink-600'
+                          : 'text-blue-600'
+                        : 'text-white'
                     )} />
                     <span>{item.label}</span>
                   </div>
@@ -685,7 +711,13 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
                     ) : item.count !== null ? (
                       <span className={cn(
                         'text-xs px-2 py-1 rounded-full font-semibold',
-                        active ? 'bg-blue-500 text-white' : 'bg-white/20 text-white'
+                        active 
+                          ? activeSection === 'printing' 
+                            ? 'bg-green-500 text-white' 
+                            : activeSection === 'online'
+                            ? 'bg-pink-500 text-white'
+                            : 'bg-blue-500 text-white'
+                          : 'bg-white/20 text-white'
                       )}>
                         {item.count}
                       </span>
@@ -695,7 +727,13 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
                     <ChevronDown 
                       className={cn(
                         'h-4 w-4 transition-transform duration-200',
-                        active ? 'text-blue-600' : 'text-white',
+                        active 
+                          ? activeSection === 'printing' 
+                            ? 'text-green-600' 
+                            : activeSection === 'online'
+                            ? 'text-pink-600'
+                            : 'text-blue-600'
+                          : 'text-white',
                         isExpanded ? 'rotate-180' : ''
                       )}
                     />
@@ -715,13 +753,27 @@ export function SidebarNav({ activeSection = 'dashboard' }: SidebarNavProps) {
                           className={cn(
                             'flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 border-b border-gray-200',
                             childActive
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'text-white hover:bg-white hover:text-blue-600'
+                              ? activeSection === 'printing'
+                                ? 'bg-green-100 text-green-800'
+                                : activeSection === 'online'
+                                ? 'bg-pink-100 text-pink-800'
+                                : 'bg-blue-100 text-blue-800'
+                              : activeSection === 'printing'
+                                ? 'text-white hover:bg-white hover:text-green-600'
+                                : activeSection === 'online'
+                                ? 'text-white hover:bg-white hover:text-pink-600'
+                                : 'text-white hover:bg-white hover:text-blue-600'
                           )}
                         >
                           <ChildIcon className={cn(
                             'h-4 w-4 flex-shrink-0',
-                            childActive ? 'text-blue-800' : 'text-white'
+                            childActive 
+                              ? activeSection === 'printing' 
+                                ? 'text-green-800' 
+                                : activeSection === 'online'
+                                ? 'text-pink-800'
+                                : 'text-blue-800'
+                              : 'text-white'
                           )} />
                           <span>{child.label}</span>
                         </Link>

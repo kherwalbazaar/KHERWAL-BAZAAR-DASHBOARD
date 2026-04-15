@@ -70,7 +70,9 @@ export function Header({
     <>
       {/* Header Bar */}
       <header className={`fixed top-0 right-0 left-0 h-24 border-b border-border shadow-sm z-40 ${
-        activeSection === 'printing' ? 'bg-green-600' : 'bg-blue-500'
+        activeSection === 'printing' ? 'bg-green-600' : 
+        activeSection === 'online' ? 'bg-pink-600' : 
+        'bg-blue-500'
       }`}>
         <div className="h-full px-6 flex items-center justify-between relative">
           {/* Left Side - Logo, Title and Tagline */}
@@ -100,17 +102,19 @@ export function Header({
                 className={`flex items-center gap-2 font-medium transition-all duration-200 h-10 !bg-white cursor-pointer hover:!bg-gray-50 ${
                   activeSection === 'printing' 
                     ? '!text-pink-600 !border-pink-300' 
+                    : activeSection === 'online'
+                    ? '!text-purple-600 !border-purple-300'
                     : '!text-green-600 !border-green-300'
                 }`}
               >
                 <div className={`w-2.5 h-2.5 rounded-full transition-all ${
                   dataStatus === 'green' 
-                    ? (activeSection === 'printing' ? 'bg-pink-500' : 'bg-green-500')
+                    ? (activeSection === 'printing' ? 'bg-pink-500' : activeSection === 'online' ? 'bg-purple-500' : 'bg-green-500')
                     : dataStatus === 'yellow' 
                     ? 'bg-yellow-500 animate-pulse' 
                     : 'bg-red-500'
                 }`}></div>
-                {dataStatus === 'green' && (activeSection === 'printing' ? '✓ ONLINE' : '✓ Up to date')}
+                {dataStatus === 'green' && '✓ Up to date'}
                 {dataStatus === 'yellow' && (
                   <>
                     <RefreshCw className="h-3.5 w-3.5 animate-spin" />
