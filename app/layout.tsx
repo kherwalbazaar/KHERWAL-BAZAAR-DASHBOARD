@@ -10,6 +10,9 @@ import { ThemeProvider } from '@/components/theme-provider'
 export const metadata: Metadata = {
   title: 'KHERWAL BAZAAR - Business OS',
   description: 'Unified admin dashboard for managing all your businesses',
+  icons: {
+    icon: '/header.png',
+  },
 }
 
 export default function RootLayout({
