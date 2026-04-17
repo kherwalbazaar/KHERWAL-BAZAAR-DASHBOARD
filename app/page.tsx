@@ -673,7 +673,7 @@ export default function Home() {
             {activeSection === 'online' && (
               <div className="min-h-screen bg-gray-100 -m-8 -mt-20 p-8">
                 {/* Mini Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 px-4 shadow-lg mb-4">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 px-0 shadow-lg mb-4 mt-6 -mx-8">
                   <div className="max-w-7xl mx-auto">
                     <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2">
                       <span className="text-3xl">🇮🇳</span>
