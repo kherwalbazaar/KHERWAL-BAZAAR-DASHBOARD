@@ -20,6 +20,8 @@ import CustomOrderForm from './orders/custom-order'
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState('garments')
+  const [services, setServices] = useState<any[]>([])
+  const [isLoadingServices, setIsLoadingServices] = useState(true)
   const [metrics, setMetrics] = useState({
     totalSale: 0,
     totalOrders: 0,
@@ -57,6 +59,81 @@ export default function Home() {
   const [customerName, setCustomerName] = useState<string>('')
   const [customerPhone, setCustomerPhone] = useState<string>('')
 
+  // Auto-detect thumbnail based on service title
+  const getAutoThumbnail = (title: string): string => {
+    const titleLower = title.toLowerCase()
+    
+    const serviceLogos: { [key: string]: string } = {
+      'aadhaar': 'https://upload.wikimedia.org/wikipedia/en/thumb/4/4c/Aadhaar_Logo.svg/2560px-Aadhaar_Logo.svg.png',
+      'voter': 'https://upload.wikimedia.org/wikipedia/en/thumb/9/93/Election_Commission_of_India_logo.svg/2560px-Election_Commission_of_India_logo.svg.png',
+      'pan': 'https://upload.wikimedia.org/wikipedia/en/thumb/9/95/Income_Tax_Department_India.svg/2560px-Income_Tax_Department_India.svg.png',
+      'lpg': 'https://upload.wikimedia.org/wikipedia/en/thumb/4/45/Indian_Oil_Corporation_logo.svg/2560px-Indian_Oil_Corporation_logo.svg.png',
+      'gas': 'https://upload.wikimedia.org/wikipedia/en/thumb/4/45/Indian_Oil_Corporation_logo.svg/2560px-Indian_Oil_Corporation_logo.svg.png',
+      'train': 'https://upload.wikimedia.org/wikipedia/en/thumb/4/43/Indian_Railways_logo.svg/2560px-Indian_Railways_logo.svg.png',
+      'irctc': 'https://upload.wikimedia.org/wikipedia/en/thumb/4/43/Indian_Railways_logo.svg/2560px-Indian_Railways_logo.svg.png',
+      'banking': 'https://upload.wikimedia.org/wikipedia/en/thumb/5/55/State_Bank_of_India_logo.svg/2560px-State_Bank_of_India_logo.svg.png',
+      'sbi': 'https://upload.wikimedia.org/wikipedia/en/thumb/5/55/State_Bank_of_India_logo.svg/2560px-State_Bank_of_India_logo.svg.png',
+      'ration': 'https://upload.wikimedia.org/wikipedia/en/thumb/9/95/Department_of_Food_and_Public_Distribution_India.svg/2560px-Department_of_Food_and_Public_Distribution_India.svg.png',
+      'passport': 'https://upload.wikimedia.org/wikipedia/en/thumb/6/68/Ministry_of_External_Affairs_India.svg/2560px-Ministry_of_External_Affairs_India.svg.png',
+      'postal': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e4/India_Post_Logo.svg/2560px-India_Post_Logo.svg.png',
+      'post': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e4/India_Post_Logo.svg/2560px-India_Post_Logo.svg.png',
+      'driving': 'https://upload.wikimedia.org/wikipedia/en/thumb/4/49/Ministry_of_Road_Transport_and_Highways_India.svg/2560px-Ministry_of_Road_Transport_and_Highways_India.svg.png',
+      'license': 'https://upload.wikimedia.org/wikipedia/en/thumb/4/49/Ministry_of_Road_Transport_and_Highways_India.svg/2560px-Ministry_of_Road_Transport_and_Highways_India.svg.png',
+      'agriculture': 'https://upload.wikimedia.org/wikipedia/en/thumb/8/86/Ministry_of_Agriculture_and_Farmers_Welfare_India.svg/2560px-Ministry_of_Agriculture_and_Farmers_Welfare_India.svg.png',
+      'pf': 'https://upload.wikimedia.org/wikipedia/en/thumb/6/68/EPFO_India_logo.svg/2560px-EPFO_India_logo.svg.png',
+      'epf': 'https://upload.wikimedia.org/wikipedia/en/thumb/6/68/EPFO_India_logo.svg/2560px-EPFO_India_logo.svg.png',
+      'bus': 'https://upload.wikimedia.org/wikipedia/en/thumb/c/c7/RedBus_logo.svg/2560px-RedBus_logo.svg.png',
+      'redbus': 'https://upload.wikimedia.org/wikipedia/en/thumb/c/c7/RedBus_logo.svg/2560px-RedBus_logo.svg.png',
+      'job': 'https://upload.wikimedia.org/wikipedia/en/thumb/2/29/National_Career_Service_India.svg/2560px-National_Career_Service_India.svg.png',
+      'ncs': 'https://upload.wikimedia.org/wikipedia/en/thumb/2/29/National_Career_Service_India.svg/2560px-National_Career_Service_India.svg.png',
+      'digilocker': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e7/DigiLocker_Logo.svg/2560px-DigiLocker_Logo.svg.png',
+      'digital': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e7/DigiLocker_Logo.svg/2560px-DigiLocker_Logo.svg.png',
+      'locker': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e7/DigiLocker_Logo.svg/2560px-DigiLocker_Logo.svg.png',
+      'electricity': 'https://upload.wikimedia.org/wikipedia/en/thumb/6/68/Ministry_of_Power_India.svg/2560px-Ministry_of_Power_India.svg.png',
+      'water': 'https://upload.wikimedia.org/wikipedia/en/thumb/8/86/Ministry_of_Jal_Shakti_India.svg/2560px-Ministry_of_Jal_Shakti_India.svg.png',
+      'education': 'https://upload.wikimedia.org/wikipedia/en/thumb/6/68/Ministry_of_Education_India.svg/2560px-Ministry_of_Education_India.svg.png',
+      'health': 'https://upload.wikimedia.org/wikipedia/en/thumb/6/68/Ministry_of_Health_and_Family_Welfare_India.svg/2560px-Ministry_of_Health_and_Family_Welfare_India.svg.png',
+      'helpline': 'https://upload.wikimedia.org/wikipedia/en/thumb/8/86/Government_of_India_logo.svg/2560px-Government_of_India_logo.svg.png',
+      'government': 'https://upload.wikimedia.org/wikipedia/en/thumb/8/86/Government_of_India_logo.svg/2560px-Government_of_India_logo.svg.png',
+      'govt': 'https://upload.wikimedia.org/wikipedia/en/thumb/8/86/Government_of_India_logo.svg/2560px-Government_of_India_logo.svg.png',
+      'yojana': 'https://upload.wikimedia.org/wikipedia/en/thumb/8/86/Government_of_India_logo.svg/2560px-Government_of_India_logo.svg.png',
+      'scheme': 'https://upload.wikimedia.org/wikipedia/en/thumb/8/86/Government_of_India_logo.svg/2560px-Government_of_India_logo.svg.png'
+    }
+    
+    // Check for exact matches first
+    for (const [key, url] of Object.entries(serviceLogos)) {
+      if (titleLower.includes(key)) {
+        return url
+      }
+    }
+    
+    // Generate a placeholder with the service name
+    return `https://via.placeholder.com/48x48/4F46E5/FFFFFF?text=${encodeURIComponent(title.toUpperCase().substring(0, 3))}`
+  }
+
+  // Load services from Firebase
+  const loadServices = async () => {
+    try {
+      const { getServices } = await import('@/lib/firebase')
+      const result = await getServices()
+      
+      if (result.success && result.services) {
+        // Filter only active services for the main page
+        const activeServices = result.services.filter((service: any) => service.status === 'active')
+        setServices(activeServices)
+        console.log('Services loaded:', activeServices)
+      } else {
+        console.error('Failed to load services:', result.error)
+        setServices([])
+      }
+    } catch (error) {
+      console.error('Error loading services:', error)
+      setServices([])
+    } finally {
+      setIsLoadingServices(false)
+    }
+  }
+
   // Load real data from Firebase on component mount
   useEffect(() => {
     setIsClient(true)
@@ -65,6 +142,7 @@ export default function Home() {
     loadDashboardData()
     loadCustomers()
     loadPrintingMetrics()
+    loadServices()
   }, [])
 
   // Set up change detection listener - checks for data changes every 3 seconds when not syncing
@@ -130,9 +208,8 @@ export default function Home() {
           console.log('Auto-syncing after detecting data changes...')
           setIsRefreshing(true)
           setIsSyncing(true)
-          setDataStatus('yellow') // Set to yellow during sync
+          setDataStatus('yellow')
           await loadDashboardData()
-          setChangeDetectedTime(null)
         }
       }, 3000)
       
@@ -310,7 +387,8 @@ export default function Home() {
         <main className="flex-1 ml-64 bg-background">
         <div className="p-8 w-full mt-20">
           {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {activeSection !== 'online' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <Card className={activeSection === 'printing' ? "bg-purple-500 text-white" : "bg-blue-500 text-white"}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white">
@@ -458,10 +536,11 @@ export default function Home() {
                 </p>
               </CardContent>
             </Card>
-          </div>
+            </div>
+          )}
 
-            {/* KHERWAL BAZAAR Section */}
-            {activeSection === 'garments' && (
+          {/* KHERWAL BAZAAR Section */}
+          {activeSection === 'garments' && (
               <div className="space-y-6">
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold text-gray-800 mb-2">KHERWAL BAZAAR</h2>
@@ -592,67 +671,65 @@ export default function Home() {
 
             {/* Online Section */}
             {activeSection === 'online' && (
-              <div className="space-y-6">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Online Services</h2>
-                  <p className="text-gray-600">Digital services and solutions</p>
+              <div className="min-h-screen bg-gray-100 -m-8 -mt-20 p-8">
+                {/* Mini Header */}
+                <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 px-4 shadow-lg mb-4">
+                  <div className="max-w-7xl mx-auto">
+                    <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2">
+                      <span className="text-3xl">🇮🇳</span>
+                      KHERWAL ONLINE SERVICES
+                    </h1>
+                  </div>
                 </div>
                 
-                {/* Online Categories */}
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-pink-200">
-                    <CardHeader className="text-center">
-                      <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <Package className="h-8 w-8 text-pink-600" />
+                <div className="p-4">
+
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {isLoadingServices ? (
+                    // Loading state
+                    Array.from({ length: 24 }).map((_, index) => (
+                      <div 
+                        key={`loading-${index}`}
+                        className="bg-white p-4 rounded-xl shadow text-center cursor-pointer hover:shadow-lg transition flex flex-col items-center animate-pulse"
+                      >
+                        <div className="w-12 h-12 mb-3 bg-gray-300 rounded-lg"></div>
+                        <div className="h-5 bg-gray-300 rounded w-3/4"></div>
                       </div>
-                      <CardTitle className="text-lg">User Panel</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                      <p className="text-sm text-gray-600">Account management</p>
-                      <Badge className="mt-2 bg-pink-100 text-pink-800">Active</Badge>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-pink-200">
-                    <CardHeader className="text-center">
-                      <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <Package className="h-8 w-8 text-pink-600" />
+                    ))
+                  ) : services.length > 0 ? (
+                    // Dynamic services from Firebase
+                    services.map((service) => (
+                      <div 
+                        key={service.id}
+                        onClick={() => window.open(service.link, '_blank')}
+                        className="bg-white p-4 rounded-xl shadow text-center cursor-pointer hover:shadow-lg transition flex flex-col items-center"
+                      >
+                        <div className="w-12 h-12 mb-3 flex items-center justify-center">
+                          <img
+                            src={service.thumbnail || getAutoThumbnail(service.title)}
+                            alt={service.title}
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.src = getAutoThumbnail(service.title)
+                            }}
+                          />
+                        </div>
+                        <h3 className="font-bold text-lg text-gray-800 leading-tight">
+                          {service.title}
+                        </h3>
                       </div>
-                      <CardTitle className="text-lg">Certificates</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                      <p className="text-sm text-gray-600">Digital certificates</p>
-                      <Badge className="mt-2 bg-pink-100 text-pink-800">23 Available</Badge>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-pink-200">
-                    <CardHeader className="text-center">
-                      <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <Package className="h-8 w-8 text-pink-600" />
-                      </div>
-                      <CardTitle className="text-lg">Forms</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                      <p className="text-sm text-gray-600">Online applications</p>
-                      <Badge className="mt-2 bg-pink-100 text-pink-800">12 Forms</Badge>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-pink-200">
-                    <CardHeader className="text-center">
-                      <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <Package className="h-8 w-8 text-pink-600" />
-                      </div>
-                      <CardTitle className="text-lg">Reports</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                      <p className="text-sm text-gray-600">Analytics & insights</p>
-                      <Badge className="mt-2 bg-pink-100 text-pink-800">Live</Badge>
-                    </CardContent>
-                  </Card>
+                    ))
+                  ) : (
+                    // No services state
+                    <div className="col-span-full text-center py-12">
+                      <p className="text-gray-500 text-lg">No services available</p>
+                      <p className="text-gray-400 text-sm mt-2">Add services from the User Panel to see them here</p>
+                    </div>
+                  )}
                 </div>
               </div>
+            </div>
             )}
 
             {/* Charts */}

@@ -173,17 +173,16 @@ export function Header({
                   variant="outline" 
                   className={cn(
                     "font-medium rounded-sm transition-all duration-200",
-                    activeButton === 'kherwal' 
+                    activeSection === 'garments' 
                       ? "!bg-white text-blue-500 border-gray-300" 
                       : "bg-blue-400 text-white hover:bg-blue-500"
                   )}
                   onClick={() => {
-                    setActiveButton(activeButton === 'kherwal' ? null : 'kherwal')
                     setActiveSection?.('garments')
                   }}
                 >
                   <span 
-                    className={activeButton === 'kherwal' ? 
+                    className={activeSection === 'garments' ? 
                       'text-blue-600 transform -translate-y-0.5 transition-all duration-200 ease-in-out' 
                     : 
                       'text-white transform translate-y-0 transition-all duration-200 ease-in-out hover:text-white'
@@ -196,17 +195,16 @@ export function Header({
                   variant="outline" 
                   className={cn(
                     "font-medium rounded-sm transition-all duration-200",
-                    activeButton === 'printing' 
+                    activeSection === 'printing' 
                       ? "!bg-white text-green-600 border-gray-300" 
                       : (activeSection === 'printing' ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-400 text-white hover:bg-gray-500")
                   )}
                   onClick={() => {
-                    setActiveButton(activeButton === 'printing' ? null : 'printing')
                     setActiveSection?.('printing')
                   }}
                 >
                   <span 
-                    className={activeButton === 'printing' ? 
+                    className={activeSection === 'printing' ? 
                       'text-green-600 -translate-y-0.5' 
                     : 
                       'text-white'
@@ -219,18 +217,17 @@ export function Header({
                   variant="outline" 
                   className={cn(
                     "font-medium rounded-sm transition-all duration-200",
-                    activeButton === 'online' 
+                    activeSection === 'online' 
                       ? "!bg-white text-blue-500 border-gray-300" 
                       : "bg-blue-400 text-white hover:bg-blue-500"
                   )}
                   onClick={() => {
-                    setActiveButton(activeButton === 'online' ? null : 'online')
                     setActiveSection?.('online')
                   }}
                 >
                   <span 
-                    className={activeButton === 'online' ? 
-                      'text-green-600 -translate-y-0.5 transition duration-200 ease-in-out' 
+                    className={activeSection === 'online' ? 
+                      'text-blue-600 -translate-y-0.5 transition duration-200 ease-in-out' 
                     : 
                       'text-white transition duration-200 ease-in-out'
                     }

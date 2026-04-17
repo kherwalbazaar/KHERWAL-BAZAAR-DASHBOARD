@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -27,6 +28,7 @@ if (typeof window !== 'undefined') {
 }
 
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 // Test Firebase connection
 export const testFirebaseConnection = async () => {
@@ -532,6 +534,104 @@ export const deletePrintingCategory = async (categoryId: string) => {
     return { success: true, id: categoryId };
   } catch (error) {
     console.error('Error deleting printing category:', error);
+    return { success: false, error };
+  }
+};
+
+// Image Upload Function
+export const uploadImage = async (file: File, path: string) => {
+  try {
+    console.log('[Firebase] Uploading image:', file.name, 'to path:', path);
+    const storageRef = ref(storage, path);
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    console.log('[Firebase] ✅ Image uploaded successfully:', downloadURL);
+    return { success: true, url: downloadURL };
+  } catch (error) {
+    console.error('[Firebase] ❌ Error uploading image:', error);
+    return { success: false, error };
+  }
+};
+
+// ========================================
+// ONLINE SERVICES FIREBASE FUNCTIONS
+// ========================================
+
+// Services Management
+export const addService = async (serviceData: any) => {
+  try {
+    console.log('[Firebase] Adding service:', serviceData);
+    const docRef = await addDoc(collection(db, 'services'), {
+      ...serviceData,
+      status: 'active', // Default status
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+    console.log('[Firebase] ✅ Service added successfully with ID:', docRef.id);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('[Firebase] ❌ Error adding service:', error);
+    return { success: false, error };
+  }
+};
+
+export const getServices = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'services'));
+    const services: any[] = [];
+    querySnapshot.forEach((doc) => {
+      services.push({ id: doc.id, ...doc.data() });
+    });
+    // Sort by createdAt descending (newest first)
+    services.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return { success: true, services };
+  } catch (error) {
+    console.error('Error getting services:', error);
+    return { success: false, error };
+  }
+};
+
+export const getService = async (serviceId: string) => {
+  try {
+    const { getDoc } = await import('firebase/firestore');
+    const serviceRef = doc(db, 'services', serviceId);
+    const serviceSnap = await getDoc(serviceRef);
+    
+    if (serviceSnap.exists()) {
+      return { success: true, service: { id: serviceSnap.id, ...serviceSnap.data() } };
+    } else {
+      return { success: false, error: 'Service not found' };
+    }
+  } catch (error) {
+    console.error('Error getting service:', error);
+    return { success: false, error };
+  }
+};
+
+export const updateService = async (serviceId: string, serviceData: any) => {
+  try {
+    console.log(`[Firebase] Updating service ${serviceId}:`, serviceData);
+    const serviceRef = doc(db, 'services', serviceId);
+    await updateDoc(serviceRef, {
+      ...serviceData,
+      updatedAt: new Date().toISOString()
+    });
+    console.log(`[Firebase] ✅ Service updated successfully: ${serviceId}`);
+    return { success: true, id: serviceId };
+  } catch (error) {
+    console.error(`[Firebase] ❌ Error updating service ${serviceId}:`, error);
+    return { success: false, error };
+  }
+};
+
+export const deleteService = async (serviceId: string) => {
+  try {
+    const serviceRef = doc(db, 'services', serviceId);
+    await deleteDoc(serviceRef);
+    console.log('Service deleted with ID:', serviceId);
+    return { success: true, id: serviceId };
+  } catch (error) {
+    console.error('Error deleting service:', error);
     return { success: false, error };
   }
 };

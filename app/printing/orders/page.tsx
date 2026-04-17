@@ -52,11 +52,6 @@ interface PrintingOrder {
   deliveryDate: string
   createdAt: string
 }
-  paymentStatus: 'paid' | 'partial'
-  status: string
-  deliveryDate: string
-  createdAt: string
-}
 
 export default function PrintingOrdersList() {
   const router = useRouter()
