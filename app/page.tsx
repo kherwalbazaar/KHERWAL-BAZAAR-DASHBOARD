@@ -107,8 +107,8 @@ export default function Home() {
       }
     }
     
-    // Generate a placeholder with the service name
-    return `https://via.placeholder.com/48x48/4F46E5/FFFFFF?text=${encodeURIComponent(title.toUpperCase().substring(0, 3))}`
+    // Generate a placeholder with the first letter of the service name
+    return `https://via.placeholder.com/48x48/4F46E5/FFFFFF?text=${encodeURIComponent(title.toUpperCase().substring(0, 1))}`
   }
 
   // Load services from Firebase
@@ -118,10 +118,10 @@ export default function Home() {
       const result = await getServices()
       
       if (result.success && result.services) {
-        // Filter only active services for the main page
-        const activeServices = result.services.filter((service: any) => service.status === 'active')
-        setServices(activeServices)
-        console.log('Services loaded:', activeServices)
+        // Temporarily show all services to debug
+        setServices(result.services)
+        console.log('All services from DB:', result.services)
+        console.log('Total services count:', result.services.length)
       } else {
         console.error('Failed to load services:', result.error)
         setServices([])
@@ -675,8 +675,7 @@ export default function Home() {
                 {/* Mini Header */}
                 <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 px-0 shadow-lg mb-4 mt-6 -mx-8">
                   <div className="max-w-7xl mx-auto">
-                    <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-                      <span className="text-3xl">🇮🇳</span>
+                    <h1 className="text-2xl font-bold text-center">
                       KHERWAL ONLINE SERVICES
                     </h1>
                   </div>
@@ -706,7 +705,7 @@ export default function Home() {
                       >
                         <div className="w-12 h-12 mb-3 flex items-center justify-center">
                           <img
-                            src={service.thumbnail || getAutoThumbnail(service.title)}
+                            src={service.thumbnail && service.thumbnail.trim() ? service.thumbnail : getAutoThumbnail(service.title)}
                             alt={service.title}
                             className="w-full h-full object-contain"
                             onError={(e) => {
