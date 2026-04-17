@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { SidebarNav } from '@/components/sidebar-nav'
 import { Header } from '@/components/header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,6 +9,13 @@ import { Dashboard } from '@/components/dashboard'
 import { TrendingUp, ShoppingCart, Users, DollarSign, Package, Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
@@ -52,6 +59,22 @@ export default function Home() {
   const [changeDetectedTime, setChangeDetectedTime] = useState<number | null>(null)
   const [customOrderOpen, setCustomOrderOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  
+  // Age Calculator state
+  const [ageCalculatorOpen, setAgeCalculatorOpen] = useState(false)
+  const [birthYear, setBirthYear] = useState('')
+  const [birthMonth, setBirthMonth] = useState('')
+  const [birthDay, setBirthDay] = useState('')
+  const [calculatedAge, setCalculatedAge] = useState<{
+    years: number
+    months: number
+    days: number
+    nextBirthday: string
+  } | null>(null)
+  
+  const yearInputRef = useRef<HTMLInputElement>(null)
+  const dayInputRef = useRef<HTMLInputElement>(null)
+  const [monthInputFocused, setMonthInputFocused] = useState(false)
   
   // Customer state for printing orders
   const [customers, setCustomers] = useState<any[]>([])
@@ -372,6 +395,49 @@ export default function Home() {
     await loadDashboardData()
   }
 
+  const calculateAge = () => {
+    if (!birthYear || !birthMonth || !birthDay) return
+    
+    const birth = new Date(parseInt(birthYear), parseInt(birthMonth) - 1, parseInt(birthDay))
+    const today = new Date()
+    
+    let years = today.getFullYear() - birth.getFullYear()
+    let months = today.getMonth() - birth.getMonth()
+    let days = today.getDate() - birth.getDate()
+    
+    if (days < 0) {
+      months--
+      const lastMonth = new Date(today.getFullYear(), today.getMonth(), 0)
+      days += lastMonth.getDate()
+    }
+    
+    if (months < 0) {
+      years--
+      months += 12
+    }
+    
+    // Calculate next birthday
+    const nextBirthday = new Date(today.getFullYear(), birth.getMonth(), birth.getDate())
+    if (nextBirthday < today) {
+      nextBirthday.setFullYear(today.getFullYear() + 1)
+    }
+    const daysUntilBirthday = Math.ceil((nextBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    
+    setCalculatedAge({
+      years,
+      months,
+      days,
+      nextBirthday: daysUntilBirthday === 0 ? 'Today! 🎉' : `${daysUntilBirthday} days`
+    })
+  }
+
+  const resetAgeCalculator = () => {
+    setBirthYear('')
+    setBirthMonth('')
+    setBirthDay('')
+    setCalculatedAge(null)
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header 
@@ -684,6 +750,23 @@ export default function Home() {
                 <div className="p-4">
 
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {/* Static Age Calculator Card */}
+                  <div 
+                    onClick={() => setAgeCalculatorOpen(true)}
+                    className="bg-white p-4 rounded-xl shadow text-center cursor-pointer hover:shadow-lg transition flex flex-col items-center"
+                  >
+                    <div className="w-12 h-12 mb-3 flex items-center justify-center">
+                      <img
+                        src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                        alt="Age Calculator"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <h3 className="font-bold text-lg text-gray-800 leading-tight">
+                      Age Calculator
+                    </h3>
+                  </div>
+
                   {isLoadingServices ? (
                     // Loading state
                     Array.from({ length: 24 }).map((_, index) => (
@@ -744,6 +827,161 @@ export default function Home() {
         productType="custom"
         basePrice={0}
       />
+
+      {/* Age Calculator Dialog */}
+      <Dialog open={ageCalculatorOpen} onOpenChange={setAgeCalculatorOpen}>
+        <DialogContent 
+          className="sm:max-w-md"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle>Age Calculator</DialogTitle>
+            <DialogDescription>
+              Enter your birth date to calculate your exact age
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {/* Horizontal Date Input YYYY-MM-DD */}
+            <div className="space-y-2">
+              <label className="text-xl font-bold text-center block">Date of Birth (YYYYMMDD)</label>
+              <div className="flex justify-center items-center gap-0">
+                <Input
+                  ref={yearInputRef}
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="YYYY"
+                  value={birthYear}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 4)
+                    setBirthYear(value)
+                    if (value.length === 4) {
+                      // Auto-focus to month input after entering year
+                      document.getElementById('month-input')?.focus()
+                    }
+                  }}
+                  className="w-24 text-center text-5xl font-bold rounded-l-lg rounded-r-none"
+                  maxLength={4}
+                  id="year-input"
+                />
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="MM"
+                  value={birthMonth}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 2)
+                    setBirthMonth(value)
+                    if (value.length === 2) {
+                      // Auto-focus to day input after entering month
+                      dayInputRef.current?.focus()
+                    }
+                  }}
+                  onFocus={() => setMonthInputFocused(true)}
+                  onBlur={() => setTimeout(() => setMonthInputFocused(false), 200)}
+                  className="w-16 text-center text-5xl font-bold rounded-none"
+                  maxLength={2}
+                  id="month-input"
+                />
+                <Input
+                  ref={dayInputRef}
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="DD"
+                  value={birthDay}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 2)
+                    setBirthDay(value)
+                  }}
+                  className="w-16 text-center text-5xl font-bold rounded-r-lg rounded-l-none"
+                  maxLength={2}
+                  id="day-input"
+                />
+              </div>
+            </div>
+            
+            {/* Month Grid - Shows when month input is focused */}
+            {monthInputFocused && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Select Month</label>
+                <div className="grid grid-cols-4 gap-0">
+                  {[
+                    { code: '01', name: 'January' },
+                    { code: '02', name: 'February' },
+                    { code: '03', name: 'March' },
+                    { code: '04', name: 'April' },
+                    { code: '05', name: 'May' },
+                    { code: '06', name: 'June' },
+                    { code: '07', name: 'July' },
+                    { code: '08', name: 'August' },
+                    { code: '09', name: 'September' },
+                    { code: '10', name: 'October' },
+                    { code: '11', name: 'November' },
+                    { code: '12', name: 'December' },
+                  ].map((month) => (
+                    <button
+                      key={month.code}
+                      onClick={() => {
+                        setBirthMonth(month.code)
+                        setMonthInputFocused(false)
+                        dayInputRef.current?.focus()
+                      }}
+                      className={`p-2 text-xs rounded-lg border transition-colors ${
+                        birthMonth === month.code
+                          ? 'bg-blue-500 text-white border-blue-500'
+                          : 'bg-white hover:bg-blue-50 border-gray-200'
+                      }`}
+                    >
+                      <div className="font-semibold text-sm">{month.code}</div>
+                      <div className="text-xs">{month.name}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {calculatedAge && (
+              <div className="space-y-4">
+                {/* Age Result */}
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 space-y-3">
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                      <div className="text-2xl font-bold text-blue-600">{calculatedAge.years}</div>
+                      <div className="text-xs text-gray-600">Years</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                      <div className="text-2xl font-bold text-purple-600">{calculatedAge.months}</div>
+                      <div className="text-xs text-gray-600">Months</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                      <div className="text-2xl font-bold text-pink-600">{calculatedAge.days}</div>
+                      <div className="text-xs text-gray-600">Days</div>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 shadow-sm text-center">
+                    <div className="text-sm text-gray-600">Next Birthday</div>
+                    <div className="text-lg font-semibold text-green-600">{calculatedAge.nextBirthday}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={resetAgeCalculator}
+              disabled={!birthYear && !birthMonth && !birthDay && !calculatedAge}
+            >
+              Reset
+            </Button>
+            <Button
+              onClick={calculateAge}
+              disabled={!birthYear || !birthMonth || !birthDay}
+            >
+              Calculate Age
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
