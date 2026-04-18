@@ -36,17 +36,6 @@ interface PrintingProduct {
   status: string
 }
 
-const printingCategories = [
-  'Business Cards',
-  'Stationery',
-  'Marketing Materials',
-  'Large Format',
-  'Packaging',
-  'Labels & Stickers',
-  'Books & Booklets',
-  'Invitations',
-  'Other'
-]
 
 const paperTypes = [
   'Standard',
@@ -160,6 +149,7 @@ function AddPrintingProductPage() {
 
   const [loading, setLoading] = useState(false)
   const [isClient, setIsClient] = useState(false)
+  const [categories, setCategories] = useState<string[]>([])
   const [formData, setFormData] = useState<PrintingProduct>({
     id: '',
     name: '',
@@ -177,6 +167,7 @@ function AddPrintingProductPage() {
 
   useEffect(() => {
     setIsClient(true)
+    loadCategories()
     if (isEditing && editId) {
       loadProductForEdit(editId)
     } else {
@@ -184,6 +175,22 @@ function AddPrintingProductPage() {
       generateSKU()
     }
   }, [isEditing, editId])
+
+  const loadCategories = async () => {
+    try {
+      const { getPrintingCategories } = await import('@/lib/firebase')
+      const result = await getPrintingCategories()
+      
+      if (result.success && result.categories) {
+        const categoryNames = result.categories.map((cat: any) => cat.name)
+        setCategories(categoryNames)
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error)
+      // Fallback to empty array if fetch fails
+      setCategories([])
+    }
+  }
 
   const generateSKU = () => {
     const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
@@ -340,18 +347,24 @@ function AddPrintingProductPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="category">Category *</Label>
-                <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {printingCategories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {categories.length > 0 ? (
+                  <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="p-3 border rounded-md bg-gray-50 text-sm text-gray-500">
+                    Loading categories...
+                  </div>
+                )}
               </div>
               <div>
                 <Label htmlFor="price">Price per Unit (₹) *</Label>
