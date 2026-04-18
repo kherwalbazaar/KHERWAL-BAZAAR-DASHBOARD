@@ -357,22 +357,55 @@ export default function Home() {
 
   const loadPrintingMetrics = async () => {
     try {
-      // Mock printing metrics - in real implementation, fetch from Firebase
-      const mockPrintingMetrics = {
-        totalPrintingSales: 45000,
-        totalPrintingOrders: 125,
-        activePrintingCustomers: 45,
-        printingGrowthRate: 12.5,
-        totalPrintingProducts: 8,
-        totalPrintingStock: 2500,
-        totalPrintingCost: 18000,
-        pendingJobs: 8,
-        completedJobs: 117
+      const { getPrintingOrders, getPrintingProducts, getPrintingCustomers } = await import('@/lib/firebase')
+      
+      // Fetch real data from Firebase
+      const ordersResult = await getPrintingOrders()
+      const productsResult = await getPrintingProducts()
+      const customersResult = await getPrintingCustomers()
+      
+      const orders = ordersResult.success && ordersResult.orders ? ordersResult.orders : []
+      const products = productsResult.success && productsResult.products ? productsResult.products : []
+      const customers = customersResult.success && customersResult.customers ? customersResult.customers : []
+      
+      // Calculate real metrics
+      const totalPrintingSales = orders.reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0)
+      const totalPrintingOrders = orders.length
+      const activePrintingCustomers = customers.length
+      const totalPrintingProducts = products.length
+      const totalPrintingStock = products.reduce((sum: number, product: any) => sum + (product.stock || 0), 0)
+      const totalPrintingCost = products.reduce((sum: number, product: any) => sum + ((product.costPrice || 0) * (product.stock || 0)), 0)
+      const pendingJobs = orders.filter((order: any) => order.status === 'pending' || order.status === 'in-progress').length
+      const completedJobs = orders.filter((order: any) => order.status === 'completed').length
+      
+      const realPrintingMetrics = {
+        totalPrintingSales,
+        totalPrintingOrders,
+        activePrintingCustomers,
+        printingGrowthRate: 0,
+        totalPrintingProducts,
+        totalPrintingStock,
+        totalPrintingCost,
+        pendingJobs,
+        completedJobs
       }
-      setPrintingMetrics(mockPrintingMetrics)
-      console.log('Printing metrics loaded:', mockPrintingMetrics)
+      
+      setPrintingMetrics(realPrintingMetrics)
+      console.log('Printing metrics loaded from Firebase:', realPrintingMetrics)
     } catch (error) {
       console.error('Error loading printing metrics:', error)
+      // Set to zeros on error
+      setPrintingMetrics({
+        totalPrintingSales: 0,
+        totalPrintingOrders: 0,
+        activePrintingCustomers: 0,
+        printingGrowthRate: 0,
+        totalPrintingProducts: 0,
+        totalPrintingStock: 0,
+        totalPrintingCost: 0,
+        pendingJobs: 0,
+        completedJobs: 0
+      })
     }
   }
 

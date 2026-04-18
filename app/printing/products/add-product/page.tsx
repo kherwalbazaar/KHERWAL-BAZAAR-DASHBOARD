@@ -27,7 +27,10 @@ interface PrintingProduct {
   sku: string
   category: string
   price: number
+  costPrice: number
   stock: number
+  quantity: number
+  unit: string
   description: string
   paperType: string
   printSize: string
@@ -156,7 +159,10 @@ function AddPrintingProductPage() {
     sku: '',
     category: '',
     price: 0,
+    costPrice: 0,
     stock: 0,
+    quantity: 0,
+    unit: 'piece',
     description: '',
     paperType: '',
     printSize: '',
@@ -295,14 +301,14 @@ function AddPrintingProductPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => router.back()}>
+      <div className="flex items-center gap-4 mb-6 bg-gradient-to-r from-purple-600 to-indigo-600 p-6 -mx-6 -mt-6 rounded-b-xl">
+        <Button variant="outline" size="sm" className="gap-2 bg-white text-purple-600 hover:bg-white hover:text-purple-700" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">{isEditing ? 'Edit' : 'Add'} Printing Product</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold text-white">{isEditing ? 'Edit' : 'Add'} Printing Product</h1>
+          <p className="text-purple-100">
             {isEditing ? 'Update printing product details' : 'Add a new printing product to your inventory'}
           </p>
         </div>
@@ -317,6 +323,7 @@ function AddPrintingProductPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* 1st line: Product Name and Category */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name">Product Name *</Label>
@@ -328,23 +335,6 @@ function AddPrintingProductPage() {
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="sku">SKU Code</Label>
-                <Input
-                  id="sku"
-                  placeholder="e.g., PRINT-001"
-                  value={formData.sku}
-                  onChange={(e) => handleInputChange('sku', e.target.value)}
-                  readOnly={!isEditing}
-                  className={!isEditing ? 'bg-gray-50' : ''}
-                />
-                {!isEditing && (
-                  <p className="text-xs text-muted-foreground mt-1">Auto-generated SKU</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="category">Category *</Label>
                 {categories.length > 0 ? (
@@ -366,30 +356,55 @@ function AddPrintingProductPage() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* 2nd line: Cost Price, Qty, and Unit */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="price">Price per Unit (₹) *</Label>
+                <Label htmlFor="costPrice">Cost Price (₹)</Label>
                 <Input
-                  id="price"
+                  id="costPrice"
                   type="number"
                   step="0.01"
                   min="0"
                   placeholder="0.00"
-                  value={formData.price}
-                  onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
-                  required
+                  value={formData.costPrice}
+                  onChange={(e) => handleInputChange('costPrice', parseFloat(e.target.value) || 0)}
                 />
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe the printing product, paper quality, finishing options, etc."
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                rows={3}
-              />
+              <div>
+                <Label htmlFor="quantity">Quantity</Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={formData.quantity}
+                  onChange={(e) => handleInputChange('quantity', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="unit">Unit</Label>
+                <Select value={formData.unit} onValueChange={(value) => handleInputChange('unit', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="piece">per piece</SelectItem>
+                    <SelectItem value="kg">per kg</SelectItem>
+                    <SelectItem value="ltr">per liter</SelectItem>
+                    <SelectItem value="g">per gram</SelectItem>
+                    <SelectItem value="ml">per ml</SelectItem>
+                    <SelectItem value="meter">per meter</SelectItem>
+                    <SelectItem value="sqft">per sq ft</SelectItem>
+                    <SelectItem value="sqm">per sq meter</SelectItem>
+                    <SelectItem value="dozen">per dozen</SelectItem>
+                    <SelectItem value="pack">per pack</SelectItem>
+                    <SelectItem value="set">per set</SelectItem>
+                    <SelectItem value="box">per box</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
