@@ -241,8 +241,9 @@ function AddPrintingProductPage() {
 
     try {
       // Validate required fields
-      if (!formData.name || !formData.category || !formData.price) {
+      if (!formData.name || !formData.category) {
         alert('Please fill in all required fields')
+        setLoading(false)
         return
       }
 
@@ -250,6 +251,11 @@ function AddPrintingProductPage() {
       
       let result
       if (isEditing && editId) {
+        if (!editId) {
+          alert('Invalid product ID for editing')
+          setLoading(false)
+          return
+        }
         result = await updatePrintingProduct(editId, formData)
       } else {
         result = await addPrintingProduct(formData)

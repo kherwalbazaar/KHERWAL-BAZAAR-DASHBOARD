@@ -460,6 +460,10 @@ export const getPrintingProducts = async () => {
 
 export const updatePrintingProduct = async (productId: string, productData: any) => {
   try {
+    if (!productId) {
+      console.error('[Firebase] ❌ Error: productId is required for update');
+      return { success: false, error: 'Product ID is required' };
+    }
     console.log(`[Firebase] Updating printing product ${productId}:`, productData);
     const productRef = doc(db, 'printing-products', productId);
     await updateDoc(productRef, productData);
@@ -473,6 +477,10 @@ export const updatePrintingProduct = async (productId: string, productData: any)
 
 export const deletePrintingProduct = async (productId: string) => {
   try {
+    if (!productId) {
+      console.error('[Firebase] ❌ Error: productId is required for delete');
+      return { success: false, error: 'Product ID is required' };
+    }
     const productRef = doc(db, 'printing-products', productId);
     await deleteDoc(productRef);
     console.log('Printing product deleted with ID:', productId);

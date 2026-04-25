@@ -18,6 +18,9 @@ interface PrintingProduct {
   sku: string
   category: string
   price?: number
+  costPrice?: number
+  quantity?: number
+  unit?: string
   stock?: number
   sales?: number
   status: string
@@ -48,6 +51,7 @@ export default function PrintingProductsPage() {
       const result = await getPrintingProducts()
       
       if (result.success && result.products) {
+        console.log('Loaded products from Firebase:', result.products)
         // Ensure numeric fields are valid numbers
         const processedProducts = result.products.map(product => ({
           ...product,
@@ -55,6 +59,7 @@ export default function PrintingProductsPage() {
           stock: typeof product.stock === 'number' && !isNaN(product.stock) ? product.stock : 0,
           sales: typeof product.sales === 'number' && !isNaN(product.sales) ? product.sales : 0
         }))
+        console.log('Processed products with IDs:', processedProducts.map(p => ({ id: p.id, name: p.name })))
         setProducts(processedProducts)
       } else {
         // If no products in Firebase, show empty state
@@ -77,6 +82,12 @@ export default function PrintingProductsPage() {
   )
 
   const handleDeleteProduct = async (productId: string, productName: string) => {
+    if (!productId) {
+      console.error('Error: Product ID is missing for deletion')
+      alert('Error: Product ID is missing. Cannot delete product.')
+      return
+    }
+
     if (window.confirm(`Are you sure you want to delete "${productName}"?`)) {
       try {
         const { deletePrintingProduct } = await import('@/lib/firebase')
@@ -230,24 +241,23 @@ export default function PrintingProductsPage() {
       </div>
     )
   }
-
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
+      {/* Header */}
+      <div className="flex items-center justify-between bg-purple-600 p-6 -mx-6 -mt-6">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => router.push('/')}>
+          <Button variant="outline" size="sm" className="gap-2 bg-white text-purple-600 hover:bg-white hover:text-purple-700" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Printing Products</h1>
-            <p className="text-gray-600">All printing services and materials</p>
+            <h1 className="text-2xl font-bold text-white">Printing Products</h1>
+            <p className="text-purple-100">All printing services and materials</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-sm px-3 py-1">
-            Total Qty: {totalStock}
+          <Badge variant="secondary" className="text-sm px-3 py-1 bg-white text-purple-600">
+            Total Qty: 0
           </Badge>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
