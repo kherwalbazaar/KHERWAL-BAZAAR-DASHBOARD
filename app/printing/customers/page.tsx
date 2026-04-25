@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ArrowLeft, Plus, Search, Edit, Trash2, Printer, User } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { ArrowLeft, Plus, Search, Edit, Trash2, Printer, User, MoreVertical } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface PrintingCustomer {
@@ -33,10 +34,17 @@ export default function PrintingCustomersPage() {
   const loadPrintingCustomers = async () => {
     try {
       setLoading(true)
-      // For now, show empty state - you can connect to Firebase later
-      setCustomers([])
+      const { getPrintingCustomers } = await import('@/lib/firebase')
+      const result = await getPrintingCustomers()
+      
+      if (result.success && result.customers) {
+        setCustomers(result.customers)
+      } else {
+        setCustomers([])
+      }
     } catch (error) {
       console.error('Error loading printing customers:', error)
+      setCustomers([])
     } finally {
       setLoading(false)
     }
@@ -47,10 +55,30 @@ export default function PrintingCustomersPage() {
     customer.phone.includes(searchTerm)
   )
 
+  const handleDeleteCustomer = async (customerId: string, customerName: string) => {
+    if (window.confirm(`Are you sure you want to delete "${customerName}"?`)) {
+      try {
+        const { deletePrintingCustomer } = await import('@/lib/firebase')
+        const result = await deletePrintingCustomer(customerId)
+        
+        if (result.success) {
+          setCustomers(customers.filter(c => c.id !== customerId))
+          alert(`Customer "${customerName}" deleted successfully`)
+        } else {
+          console.error('Error deleting customer:', result.error)
+          alert('Failed to delete customer. Please try again.')
+        }
+      } catch (error) {
+        console.error('Error deleting customer:', error)
+        alert('Failed to delete customer. Please try again.')
+      }
+    }
+  }
+
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 bg-purple-600 p-6 -mx-6 -mt-6">
+      <div className="flex items-center justify-between bg-purple-600 p-6">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" className="gap-2 bg-white text-purple-600 hover:bg-white hover:text-purple-700" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
@@ -61,34 +89,30 @@ export default function PrintingCustomersPage() {
             <p className="text-purple-100">Manage your printing shop customers</p>
           </div>
         </div>
-        <Button className="gap-2 bg-purple-600 hover:bg-purple-700 text-white">
+        <Button className="gap-2 bg-purple-600 hover:bg-purple-700 text-white" onClick={() => router.push('/printing/customers/add')}>
           <Plus className="h-4 w-4" />
           Add Customer
         </Button>
       </div>
 
-      {/* Search */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search customers by name or phone..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Customers Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            All Customers ({filteredCustomers.length})
-          </CardTitle>
+      <Card className="rounded-none">
+        <CardHeader className="bg-gray-50">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              All Customers ({filteredCustomers.length})
+            </CardTitle>
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search customers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -118,14 +142,26 @@ export default function PrintingCustomersPage() {
                       <TableCell>{customer.totalOrders}</TableCell>
                       <TableCell>₹{customer.totalSpent.toLocaleString()}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem className="gap-2">
+                              <Edit className="h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="gap-2 text-red-600"
+                              onClick={() => handleDeleteCustomer(customer.id, customer.name)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}

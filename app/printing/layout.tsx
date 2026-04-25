@@ -33,8 +33,8 @@ export default function PrintingLayout({ children }: PrintingLayoutProps) {
     setIsClient(true)
   }, [])
 
-  // Hide sidebar for add-product page
-  const showSidebar = !pathname?.includes('/add-product')
+  // Hide sidebar for add-product and add-customer pages
+  const showSidebar = !pathname?.includes('/add-product') && !pathname?.includes('/add')
 
   // Handle section changes - navigate to main dashboard when switching sections
   const handleSectionChange = (section: string) => {
